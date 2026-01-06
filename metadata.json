@@ -1,0 +1,8 @@
+{
+  "name": "Portal Família",
+  "description": "Um sistema inteligente de gestão parental que gamifica tarefas diárias e gerencia o acesso digital da família.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

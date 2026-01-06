@@ -1,0 +1,21 @@
+[Unit]
+Description=Portal Família Frontend Service
+After=network.target portal-familia-backend.service
+Requires=portal-familia-backend.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/portal_familia/portal_familia_extracted
+ExecStart=/usr/bin/npm run preview
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=portal-familia-frontend
+
+# Environment
+Environment="NODE_ENV=production"
+
+[Install]
+WantedBy=multi-user.target
