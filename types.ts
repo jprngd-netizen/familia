@@ -53,6 +53,7 @@ export interface Device {
   status: 'online' | 'offline';
   ip: string;
   isBlocked: boolean;
+  assignedTo?: string; // Child ID for automatic blocking
 }
 
 export interface SystemSettings {

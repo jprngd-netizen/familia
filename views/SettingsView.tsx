@@ -51,6 +51,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({
   const [deviceType, setDeviceType] = useState<DeviceType>('smartphone');
   const [deviceMac, setDeviceMac] = useState('');
   const [deviceIsBlocked, setDeviceIsBlocked] = useState(false);
+  const [deviceAssignedTo, setDeviceAssignedTo] = useState<string | null>(null);
 
   const roles: MemberRole[] = ['Criança', 'Adulto', 'Visitante', 'Empregado(a)', 'Outros'];
 
@@ -155,15 +156,26 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     setDeviceType('smartphone');
     setDeviceMac('');
     setDeviceIsBlocked(false);
+    setDeviceAssignedTo(null);
+    setShowDeviceModal(true);
+  };
+
+  const handleOpenEditDeviceModal = (device: Device) => {
+    setEditingDevice(device);
+    setDeviceName(device.name);
+    setDeviceType(device.type);
+    setDeviceMac(device.mac);
+    setDeviceIsBlocked(device.isBlocked);
+    setDeviceAssignedTo(device.assignedTo || null);
     setShowDeviceModal(true);
   };
 
   const handleSaveDevice = () => {
     if (!deviceName.trim() || !deviceMac.trim()) return;
     if (editingDevice) {
-      onUpdateDevice({ ...editingDevice, name: deviceName, type: deviceType, mac: deviceMac, isBlocked: deviceIsBlocked });
+      onUpdateDevice({ ...editingDevice, name: deviceName, type: deviceType, mac: deviceMac, isBlocked: deviceIsBlocked, assignedTo: deviceAssignedTo || undefined });
     } else {
-      onAddDevice({ name: deviceName, type: deviceType, mac: deviceMac, isBlocked: deviceIsBlocked });
+      onAddDevice({ name: deviceName, type: deviceType, mac: deviceMac, isBlocked: deviceIsBlocked, assignedTo: deviceAssignedTo || undefined });
     }
     setShowDeviceModal(false);
   };
@@ -274,25 +286,34 @@ const SettingsView: React.FC<SettingsViewProps> = ({
                 <button onClick={handleOpenAddDeviceModal} className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-100 transition shadow-sm border border-indigo-100"><Plus size={18} /> Adicionar Device</button>
               </div>
               <div className="space-y-4">
-                {devices.map(device => (
-                  <div key={device.id} className={`p-6 border rounded-[2rem] flex items-center justify-between transition-all ${systemSettings.theme === 'dark' ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50/30 border-slate-50'}`}>
+                {devices.map(device => {
+                  const assignedChild = children.find(c => c.id === device.assignedTo);
+                  return (
+                  <div key={device.id} className={`p-6 border rounded-[2rem] flex items-center justify-between transition-all group ${systemSettings.theme === 'dark' ? 'bg-slate-800/50 border-slate-700 hover:border-indigo-500' : 'bg-slate-50/30 border-slate-50 hover:border-indigo-200'}`}>
                     <div className="flex items-center gap-5">
                        <div className={`p-4 rounded-2xl ${device.isBlocked ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
                           <Smartphone size={24} />
                        </div>
                        <div>
                           <p className="font-bold dark:text-white">{device.name}</p>
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{device.mac} • {device.ip}</p>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{device.mac}</p>
+                          {assignedChild && (
+                            <p className="text-[10px] font-bold text-indigo-500 mt-1 flex items-center gap-1">
+                              <Users size={10} /> {assignedChild.name}
+                            </p>
+                          )}
                        </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <button onClick={() => onToggleDeviceBlock(device.id)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${device.isBlocked ? 'bg-rose-600 text-white shadow-lg shadow-rose-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
                         {device.isBlocked ? 'Bloqueado' : 'Acesso Liberado'}
                       </button>
-                      <button onClick={() => onDeleteDevice(device.id)} className="p-2 text-slate-400 hover:text-rose-500"><Trash2 size={18} /></button>
+                      <button onClick={() => handleOpenEditDeviceModal(device)} className="p-2 text-slate-400 hover:text-indigo-600 opacity-100 sm:opacity-0 group-hover:opacity-100 transition"><Edit2 size={18} /></button>
+                      <button onClick={() => onDeleteDevice(device.id)} className="p-2 text-slate-400 hover:text-rose-500 opacity-100 sm:opacity-0 group-hover:opacity-100 transition"><Trash2 size={18} /></button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -526,7 +547,7 @@ GOOGLE_REDIRECT_URI=http://localhost:5000/api/calendar/oauth2callback`}
       {showDeviceModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
           <div className={`rounded-[3rem] p-10 max-w-md w-full shadow-2xl animate-in zoom-in duration-200 ${systemSettings.theme === 'dark' ? 'bg-slate-900 text-white border border-slate-800' : 'bg-white text-slate-800'}`}>
-            <h3 className="text-2xl font-bold mb-8">Novo Dispositivo</h3>
+            <h3 className="text-2xl font-bold mb-8">{editingDevice ? 'Editar Dispositivo' : 'Novo Dispositivo'}</h3>
             <div className="space-y-6 mb-10">
               <div>
                 <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Nome amigável</label>
@@ -536,9 +557,23 @@ GOOGLE_REDIRECT_URI=http://localhost:5000/api/calendar/oauth2callback`}
                 <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Endereço MAC</label>
                 <input type="text" value={deviceMac} onChange={e => setDeviceMac(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl px-6 py-4 font-bold outline-none focus:border-indigo-500" placeholder="00:00:00:00:00:00" />
               </div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest flex items-center gap-2"><Users size={12} /> Atribuir a</label>
+                <select
+                  value={deviceAssignedTo || ''}
+                  onChange={e => setDeviceAssignedTo(e.target.value || null)}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl px-6 py-4 font-bold outline-none focus:border-indigo-500"
+                >
+                  <option value="">Nenhum (dispositivo compartilhado)</option>
+                  {children.filter(c => c.role === 'Criança').map(child => (
+                    <option key={child.id} value={child.id}>{child.name}</option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-slate-400 mt-2">Dispositivos atribuídos a crianças serão bloqueados automaticamente até que todas as tarefas sejam concluídas.</p>
+              </div>
             </div>
             <div className="flex flex-col gap-3">
-              <button onClick={handleSaveDevice} className="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-xl hover:bg-indigo-700 transition uppercase tracking-widest text-sm">Cadastrar Dispositivo</button>
+              <button onClick={handleSaveDevice} className="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-xl hover:bg-indigo-700 transition uppercase tracking-widest text-sm">{editingDevice ? 'Salvar Alterações' : 'Cadastrar Dispositivo'}</button>
               <button onClick={() => setShowDeviceModal(false)} className="w-full py-2 text-slate-400 font-bold">Cancelar</button>
             </div>
           </div>
