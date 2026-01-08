@@ -22,15 +22,54 @@ if [ "$confirm" != "y" ]; then
     read -p "Enter full path to familia folder: " SCRIPT_DIR
 fi
 
-# 1. Install Node.js if not present
+# 0. Check disk space first
+echo ""
+echo "=== Checking disk space ==="
+AVAILABLE_SPACE=$(df -BM / | tail -1 | awk '{print $4}' | sed 's/M//')
+echo "Available disk space: ${AVAILABLE_SPACE}MB"
+if [ "$AVAILABLE_SPACE" -lt 500 ]; then
+    echo ""
+    echo "WARNING: Less than 500MB free space!"
+    echo "Consider cleaning up with:"
+    echo "  sudo apt clean"
+    echo "  sudo journalctl --vacuum-size=100M"
+    echo "  docker system prune -a  (if using Docker)"
+    echo ""
+    read -p "Continue anyway? (y/n): " continue_low_space
+    if [ "$continue_low_space" != "y" ]; then
+        echo "Aborting. Please free up disk space first."
+        exit 1
+    fi
+fi
+
+# 1. Install or upgrade Node.js (requires v18+)
 echo ""
 echo "=== Checking Node.js ==="
+NEED_NODE_INSTALL=false
+
 if ! command -v node &> /dev/null; then
-    echo "Installing Node.js..."
+    echo "Node.js not found. Will install v20 LTS..."
+    NEED_NODE_INSTALL=true
+else
+    NODE_VERSION=$(node --version | sed 's/v//' | cut -d. -f1)
+    echo "Current Node.js version: v$NODE_VERSION"
+    if [ "$NODE_VERSION" -lt 18 ]; then
+        echo "Node.js v18+ required. Will upgrade to v20 LTS..."
+        NEED_NODE_INSTALL=true
+    else
+        echo "Node.js version OK!"
+    fi
+fi
+
+if [ "$NEED_NODE_INSTALL" = true ]; then
+    echo ""
+    echo "Installing Node.js v20 LTS..."
+    # Remove old nodejs if present
+    sudo apt-get remove -y nodejs npm 2>/dev/null || true
+    # Install NodeSource repo and Node.js 20
     curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
     sudo apt-get install -y nodejs
-else
-    echo "Node.js already installed: $(node --version)"
+    echo "Node.js installed: $(node --version)"
 fi
 
 # 2. Install backend dependencies
