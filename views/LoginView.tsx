@@ -1,18 +1,55 @@
 
 import React, { useState } from 'react';
-import { Shield, KeyRound, Eye, LogIn, X, ChevronRight } from 'lucide-react';
+import { Shield, KeyRound, Eye, LogIn, X, ChevronRight, UserPlus } from 'lucide-react';
 import { Child } from '../types';
+import API from '../services/apiService';
 
 interface LoginViewProps {
   children: Child[];
   onLogin: (member: Child, readOnly: boolean) => void;
+  onSetupComplete: () => void;
 }
 
-const LoginView: React.FC<LoginViewProps> = ({ children, onLogin }) => {
+const LoginView: React.FC<LoginViewProps> = ({ children, onLogin, onSetupComplete }) => {
   const [selectedProfile, setSelectedProfile] = useState<Child | null>(null);
-  const [mode, setMode] = useState<'selection' | 'pin'>('selection');
+  const [mode, setMode] = useState<'selection' | 'pin' | 'setup'>('selection');
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
+  const [setupName, setSetupName] = useState('');
+  const [setupPin, setSetupPin] = useState('');
+  const [setupConfirmPin, setSetupConfirmPin] = useState('');
+  const [setupError, setSetupError] = useState('');
+  const [setupLoading, setSetupLoading] = useState(false);
+
+  // Show setup if no children exist
+  const showSetup = children.length === 0;
+
+  const handleSetup = async () => {
+    if (!setupName.trim()) {
+      setSetupError('Digite seu nome');
+      return;
+    }
+    if (setupPin.length !== 4) {
+      setSetupError('PIN deve ter 4 dígitos');
+      return;
+    }
+    if (setupPin !== setupConfirmPin) {
+      setSetupError('PINs não conferem');
+      return;
+    }
+
+    setSetupLoading(true);
+    setSetupError('');
+
+    try {
+      await API.auth.setup(setupName.trim(), setupPin);
+      onSetupComplete();
+    } catch (err: any) {
+      setSetupError(err.message || 'Erro ao criar perfil');
+    } finally {
+      setSetupLoading(false);
+    }
+  };
 
   const handleProfileClick = (child: Child) => {
     setSelectedProfile(child);
@@ -43,6 +80,91 @@ const LoginView: React.FC<LoginViewProps> = ({ children, onLogin }) => {
   const handleQuickView = (child: Child) => {
     onLogin(child, true);
   };
+
+  // Show setup screen for first run
+  if (showSetup) {
+    return (
+      <div className="min-h-screen bg-indigo-950 flex items-center justify-center p-6 font-kids overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+          <div className="absolute top-10 left-10 w-64 h-64 bg-indigo-500 rounded-full blur-[120px]" />
+          <div className="absolute bottom-10 right-10 w-96 h-96 bg-emerald-500 rounded-full blur-[150px]" />
+        </div>
+
+        <div className="w-full max-w-md relative z-10">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-3 bg-white/10 px-6 py-3 rounded-full mb-6 border border-white/10">
+              <Shield className="text-emerald-400" size={24} />
+              <span className="text-white font-black tracking-widest uppercase text-sm">Configuração Inicial</span>
+            </div>
+            <h1 className="text-5xl font-black text-white tracking-tighter mb-4">Portal Família</h1>
+            <p className="text-indigo-200 text-lg font-medium">Crie seu perfil de administrador</p>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-emerald-500/20 rounded-xl">
+                <UserPlus className="text-emerald-400" size={24} />
+              </div>
+              <div>
+                <h2 className="text-white font-bold text-lg">Primeiro Acesso</h2>
+                <p className="text-indigo-300 text-sm">Configure o administrador da família</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-indigo-200 text-sm font-bold block mb-2">Seu Nome</label>
+                <input
+                  type="text"
+                  value={setupName}
+                  onChange={(e) => setSetupName(e.target.value)}
+                  placeholder="Ex: João"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-indigo-300/50 focus:outline-none focus:border-emerald-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-indigo-200 text-sm font-bold block mb-2">PIN (4 dígitos)</label>
+                <input
+                  type="password"
+                  maxLength={4}
+                  value={setupPin}
+                  onChange={(e) => setSetupPin(e.target.value.replace(/\D/g, ''))}
+                  placeholder="••••"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-indigo-300/50 focus:outline-none focus:border-emerald-400 text-center text-2xl tracking-[0.5em]"
+                />
+              </div>
+
+              <div>
+                <label className="text-indigo-200 text-sm font-bold block mb-2">Confirmar PIN</label>
+                <input
+                  type="password"
+                  maxLength={4}
+                  value={setupConfirmPin}
+                  onChange={(e) => setSetupConfirmPin(e.target.value.replace(/\D/g, ''))}
+                  placeholder="••••"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-indigo-300/50 focus:outline-none focus:border-emerald-400 text-center text-2xl tracking-[0.5em]"
+                />
+              </div>
+
+              {setupError && (
+                <p className="text-rose-400 text-sm font-bold text-center">{setupError}</p>
+              )}
+
+              <button
+                onClick={handleSetup}
+                disabled={setupLoading}
+                className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-500/50 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                {setupLoading ? 'Criando...' : 'Criar Perfil de Admin'}
+                {!setupLoading && <ChevronRight size={20} />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-indigo-950 flex items-center justify-center p-6 font-kids overflow-hidden relative">

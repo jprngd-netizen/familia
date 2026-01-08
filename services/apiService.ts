@@ -55,6 +55,12 @@ async function apiRequest<T>(
 // ==================== AUTH ====================
 
 export const authAPI = {
+  checkFirstRun: async () => {
+    return apiRequest<{ isFirstRun: boolean }>('/auth/first-run', 'GET');
+  },
+  setup: async (name: string, pin: string) => {
+    return apiRequest<{ success: boolean; member: any }>('/auth/setup', 'POST', { name, pin });
+  },
   verifyPin: async (memberId: string, pin: string) => {
     return apiRequest<{ success: boolean; member: any }>('/auth/verify-pin', 'POST', { memberId, pin });
   },

@@ -34,35 +34,36 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch data function (reusable)
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [childrenData, rewardsData, logsData, devicesData, settingsData, requestsData] = await Promise.all([
+        API.children.getAll(),
+        API.rewards.getAll(),
+        API.logs.getRecent(50),
+        API.devices.getAll(),
+        API.settings.get(),
+        API.rewards.getPendingRequests()
+      ]);
+
+      setChildren(childrenData);
+      setRewards(rewardsData);
+      setLogs(logsData);
+      setDevices(devicesData);
+      setSystemSettings(settingsData);
+      setRewardRequests(requestsData);
+      setLoading(false);
+    } catch (err: any) {
+      console.error('Failed to fetch initial data:', err);
+      setError(err.message || 'Failed to connect to server');
+      setLoading(false);
+    }
+  };
+
   // Fetch initial data from API
   useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        setLoading(true);
-        const [childrenData, rewardsData, logsData, devicesData, settingsData, requestsData] = await Promise.all([
-          API.children.getAll(),
-          API.rewards.getAll(),
-          API.logs.getRecent(50),
-          API.devices.getAll(),
-          API.settings.get(),
-          API.rewards.getPendingRequests()
-        ]);
-
-        setChildren(childrenData);
-        setRewards(rewardsData);
-        setLogs(logsData);
-        setDevices(devicesData);
-        setSystemSettings(settingsData);
-        setRewardRequests(requestsData);
-        setLoading(false);
-      } catch (err: any) {
-        console.error('Failed to fetch initial data:', err);
-        setError(err.message || 'Failed to connect to server');
-        setLoading(false);
-      }
-    };
-
-    fetchInitialData();
+    fetchData();
   }, []);
 
   // Apply theme
@@ -386,7 +387,7 @@ const App: React.FC = () => {
       );
     }
 
-    if (activeView === 'login') return <LoginView children={children} onLogin={handleLogin} />;
+    if (activeView === 'login') return <LoginView children={children} onLogin={handleLogin} onSetupComplete={fetchData} />;
 
     switch (activeView) {
       case 'parent-dashboard':
