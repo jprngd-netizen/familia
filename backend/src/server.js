@@ -4,7 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { initDatabase, resetDailyTasks } from './models/database.js';
+import { initDatabase, resetDailyTasks, syncAllBlockStatus } from './models/database.js';
 import childrenRoutes from './routes/children.js';
 import tasksRoutes from './routes/tasks.js';
 import rewardsRoutes from './routes/rewards.js';
@@ -42,6 +42,19 @@ try {
   const resetCount = resetDailyTasks();
   if (resetCount > 0) {
     console.log(`🔄 Reset ${resetCount} recurring tasks`);
+  }
+
+  // Sync device block status based on task completion (async)
+  if (process.env.ENABLE_FIREWALL === 'true') {
+    syncAllBlockStatus().then(results => {
+      const blockedCount = results.filter(r => r.devicesUpdated.some(d => d.action === 'blocked')).length;
+      const unblockedCount = results.filter(r => r.devicesUpdated.some(d => d.action === 'unblocked')).length;
+      if (blockedCount > 0 || unblockedCount > 0) {
+        console.log(`🔒 Firewall sync: ${blockedCount} children blocked, ${unblockedCount} unblocked`);
+      }
+    }).catch(err => {
+      console.error('⚠️ Failed to sync block status:', err.message);
+    });
   }
 } catch (error) {
   console.error('❌ Failed to initialize database:', error);

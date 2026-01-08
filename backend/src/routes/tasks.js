@@ -1,6 +1,6 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { getDatabase, updateStreak } from '../models/database.js';
+import { getDatabase, updateStreak, syncChildBlockStatus } from '../models/database.js';
 
 const router = express.Router();
 
@@ -77,11 +77,11 @@ router.post('/', (req, res) => {
 });
 
 // Toggle task completion
-router.post('/:id/toggle', (req, res) => {
+router.post('/:id/toggle', async (req, res) => {
   try {
     const db = getDatabase();
     const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id);
-    
+
     if (!task) {
       return res.status(404).json({ error: 'Task not found' });
     }
@@ -89,14 +89,14 @@ router.post('/:id/toggle', (req, res) => {
     const newCompleted = task.completed ? 0 : 1;
     const completedAt = newCompleted ? new Date().toISOString() : null;
     db.prepare('UPDATE tasks SET completed = ?, completed_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(newCompleted, completedAt, req.params.id);
-    
+
     // Update child points
     const child = db.prepare('SELECT * FROM children WHERE id = ?').get(task.child_id);
     const pointsChange = newCompleted ? task.points : -task.points;
     const newPoints = Math.max(0, child.points + pointsChange);
-    
+
     db.prepare('UPDATE children SET points = ? WHERE id = ?').run(newPoints, child.id);
-    
+
     // Update streak if completing a task
     let streakData = null;
     if (newCompleted) {
@@ -111,11 +111,30 @@ router.post('/:id/toggle', (req, res) => {
       VALUES (?, ?, ?, ?, ?)
     `).run(logId, child.id, child.name, action, newCompleted ? 'success' : 'warning');
 
+    // Sync device block status based on task completion
+    let blockStatus = null;
+    try {
+      blockStatus = await syncChildBlockStatus(child.id);
+      if (blockStatus.devicesUpdated.length > 0) {
+        const blockLogId = uuidv4();
+        const blockAction = blockStatus.allTasksDone
+          ? `Internet desbloqueada - todas as tarefas concluídas!`
+          : `Internet bloqueada - tarefas pendentes`;
+        db.prepare(`
+          INSERT INTO activity_logs (id, child_id, child_name, action, type)
+          VALUES (?, ?, ?, ?, ?)
+        `).run(blockLogId, child.id, child.name, blockAction, blockStatus.allTasksDone ? 'success' : 'warning');
+      }
+    } catch (blockError) {
+      console.error('Error syncing block status:', blockError);
+    }
+
     res.json({
       success: true,
       completed: Boolean(newCompleted),
       newPoints,
-      streak: streakData
+      streak: streakData,
+      internetAccess: blockStatus?.allTasksDone ?? null
     });
   } catch (error) {
     console.error('Toggle task error:', error);

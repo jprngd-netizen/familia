@@ -288,6 +288,74 @@ export function updateStreak(childId) {
   return { currentStreak: newStreak, longestStreak };
 }
 
+// Check if a child has completed all their tasks for today
+export function hasCompletedAllTasks(childId) {
+  const db = getDatabase();
+
+  // Get all incomplete tasks for this child
+  const incompleteTasks = db.prepare(`
+    SELECT COUNT(*) as count FROM tasks
+    WHERE child_id = ? AND completed = 0
+  `).get(childId);
+
+  return incompleteTasks.count === 0;
+}
+
+// Get devices assigned to a child
+export function getChildDevices(childId) {
+  const db = getDatabase();
+  return db.prepare('SELECT * FROM devices WHERE assigned_to = ?').all(childId);
+}
+
+// Sync block status for a child's devices based on task completion
+export async function syncChildBlockStatus(childId) {
+  const db = getDatabase();
+
+  // Import firewall dynamically to avoid circular dependencies
+  const { blockDevice, unblockDevice } = await import('../utils/firewall.js');
+
+  const allTasksDone = hasCompletedAllTasks(childId);
+  const devices = getChildDevices(childId);
+
+  const results = [];
+
+  for (const device of devices) {
+    if (allTasksDone) {
+      // Unblock device if all tasks are done
+      if (device.is_blocked) {
+        const result = await unblockDevice(device.mac, device.ip);
+        db.prepare('UPDATE devices SET is_blocked = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(device.id);
+        results.push({ device: device.name, action: 'unblocked', ...result });
+      }
+    } else {
+      // Block device if tasks are incomplete
+      if (!device.is_blocked) {
+        const result = await blockDevice(device.mac, device.ip);
+        db.prepare('UPDATE devices SET is_blocked = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(device.id);
+        results.push({ device: device.name, action: 'blocked', ...result });
+      }
+    }
+  }
+
+  return { childId, allTasksDone, devicesUpdated: results };
+}
+
+// Sync block status for all children
+export async function syncAllBlockStatus() {
+  const db = getDatabase();
+
+  // Get all children (excluding adults)
+  const children = db.prepare(`SELECT id, name FROM children WHERE role = 'Criança'`).all();
+
+  const results = [];
+  for (const child of children) {
+    const result = await syncChildBlockStatus(child.id);
+    results.push({ childName: child.name, ...result });
+  }
+
+  return results;
+}
+
 export function closeDatabase() {
   if (db) {
     db.close();
