@@ -7,7 +7,7 @@ import {
   CheckCircle2, XCircle, Loader2
 } from 'lucide-react';
 import { Child, MemberRole, Device, DeviceType, SystemSettings } from '../types';
-import { calendarAPI } from '../services/apiService';
+import { calendarAPI, settingsAPI } from '../services/apiService';
 
 interface SettingsViewProps {
   children: Child[];
@@ -62,6 +62,10 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     loading: true
   });
 
+  // Telegram test state
+  const [telegramTestStatus, setTelegramTestStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [telegramTestMessage, setTelegramTestMessage] = useState('');
+
   // Fetch calendar status on mount
   useEffect(() => {
     const fetchCalendarStatus = async () => {
@@ -89,6 +93,29 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     } catch (error) {
       console.error('Failed to disconnect calendar:', error);
     }
+  };
+
+  const handleSendTelegramTest = async () => {
+    setTelegramTestStatus('loading');
+    setTelegramTestMessage('');
+    try {
+      const result = await settingsAPI.sendTelegramTest();
+      if (result.success) {
+        setTelegramTestStatus('success');
+        setTelegramTestMessage('Mensagem enviada! Verifique seu Telegram.');
+      } else {
+        setTelegramTestStatus('error');
+        setTelegramTestMessage(result.error || 'Falha ao enviar mensagem');
+      }
+    } catch (error: any) {
+      setTelegramTestStatus('error');
+      setTelegramTestMessage(error.message || 'Erro de conexão');
+    }
+    // Reset status after 5 seconds
+    setTimeout(() => {
+      setTelegramTestStatus('idle');
+      setTelegramTestMessage('');
+    }, 5000);
   };
 
   // Verificar PIN de administrador
@@ -448,49 +475,82 @@ GOOGLE_REDIRECT_URI=http://localhost:5000/api/calendar/oauth2callback`}
               <div className={`p-8 rounded-[3rem] border shadow-sm ${systemSettings.theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                 <div className="flex justify-between items-center mb-8">
                   <h3 className="text-xl font-black flex items-center gap-3 dark:text-white"><Bot className="text-sky-500" /> Integração Telegram</h3>
-                  <button 
+                  <button
                     onClick={() => setLocalSettings({...localSettings, telegram: {...localSettings.telegram, enabled: !localSettings.telegram.enabled}})}
                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${localSettings.telegram.enabled ? 'bg-sky-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}
                   >
                     {localSettings.telegram.enabled ? 'Integração Ativa' : 'Integração Inativa'}
                   </button>
                 </div>
-                
+
                 <div className="space-y-6">
+                  {/* Quick Setup Guide */}
+                  <div className="bg-gradient-to-br from-sky-50 to-indigo-50 dark:from-sky-900/20 dark:to-indigo-900/20 p-6 rounded-[2rem] border border-sky-100 dark:border-sky-800">
+                    <p className="font-black text-sky-900 dark:text-sky-300 mb-4 flex items-center gap-2"><Zap size={18} /> Configuração Rápida</p>
+                    <ol className="text-sm text-sky-800 dark:text-sky-300/80 space-y-3 list-decimal list-inside">
+                      <li>Abra o Telegram e pesquise por <code className="bg-sky-100 dark:bg-sky-800 px-2 py-0.5 rounded font-bold">@BotFather</code></li>
+                      <li>Envie <code className="bg-sky-100 dark:bg-sky-800 px-2 py-0.5 rounded font-bold">/newbot</code> e siga as instruções para criar seu bot</li>
+                      <li>Copie o <strong>Token da API</strong> (formato: <code className="text-xs">123456789:ABCdef...</code>)</li>
+                      <li>Crie um grupo no Telegram e adicione o bot como membro</li>
+                      <li>Adicione o bot <code className="bg-sky-100 dark:bg-sky-800 px-2 py-0.5 rounded font-bold">@userinfobot</code> ao grupo e ele mostrará o <strong>Chat ID</strong></li>
+                      <li>Cole as informações abaixo, ative a integração e clique em <strong>Salvar</strong></li>
+                    </ol>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Bot API Token</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={localSettings.telegram.botToken}
                         onChange={e => setLocalSettings({...localSettings, telegram: {...localSettings.telegram, botToken: e.target.value}})}
                         className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl px-6 py-4 font-bold outline-none focus:border-sky-500 dark:text-white"
-                        placeholder="0000000000:AA..."
+                        placeholder="123456789:ABCdefGHI..."
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Chat ID (Parent Group)</label>
-                      <input 
-                        type="text" 
+                      <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Chat ID (Grupo)</label>
+                      <input
+                        type="text"
                         value={localSettings.telegram.chatId}
                         onChange={e => setLocalSettings({...localSettings, telegram: {...localSettings.telegram, chatId: e.target.value}})}
                         className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl px-6 py-4 font-bold outline-none focus:border-sky-500 dark:text-white"
-                        placeholder="-100..."
+                        placeholder="-1001234567890"
                       />
                     </div>
                   </div>
 
-                  <div className="bg-sky-50 dark:bg-sky-900/20 p-6 rounded-[2rem] border border-sky-100 dark:border-sky-800 flex items-start gap-4">
-                     <div className="bg-sky-500 p-3 rounded-2xl text-white shadow-lg"><Zap size={20} /></div>
-                     <div>
-                       <p className="font-bold text-sky-900 dark:text-sky-300">Dica de Configuração</p>
-                       <p className="text-xs text-sky-700 dark:text-sky-400/70 mt-1 leading-relaxed">
-                         Crie um bot no <strong>@BotFather</strong>, adicione-o em um grupo com seu cônjuge e use o comando <code>/getid</code> (ou bots de ID) para encontrar o Chat ID do grupo.
-                       </p>
-                     </div>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={handleSendTelegramTest}
+                      disabled={telegramTestStatus === 'loading' || !localSettings.telegram.botToken || !localSettings.telegram.chatId}
+                      className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm transition-all ${
+                        telegramTestStatus === 'success' ? 'bg-emerald-500 text-white' :
+                        telegramTestStatus === 'error' ? 'bg-rose-500 text-white' :
+                        telegramTestStatus === 'loading' ? 'bg-sky-400 text-white' :
+                        'bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-100'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {telegramTestStatus === 'loading' ? (
+                        <><Loader2 size={16} className="animate-spin" /> Enviando...</>
+                      ) : telegramTestStatus === 'success' ? (
+                        <><CheckCircle2 size={16} /> Enviado!</>
+                      ) : telegramTestStatus === 'error' ? (
+                        <><XCircle size={16} /> Erro</>
+                      ) : (
+                        <><Send size={16} /> Enviar Teste</>
+                      )}
+                    </button>
+                    {telegramTestMessage && (
+                      <span className={`text-sm font-medium ${telegramTestStatus === 'success' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {telegramTestMessage}
+                      </span>
+                    )}
                   </div>
 
-                  <button className="flex items-center gap-2 text-sky-600 dark:text-sky-400 font-bold text-sm hover:underline"><Send size={16} /> Enviar Mensagem de Teste</button>
+                  <p className="text-xs text-slate-400">
+                    Notificações: Conclusão de tarefas, resgates de prêmios, mudanças no acesso à internet.
+                  </p>
                 </div>
               </div>
 

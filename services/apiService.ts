@@ -214,9 +214,13 @@ export const settingsAPI = {
   get: async () => {
     return apiRequest<any>('/settings');
   },
-  
+
   update: async (data: any) => {
     return apiRequest<any>('/settings', 'PUT', data);
+  },
+
+  sendTelegramTest: async () => {
+    return apiRequest<{ success: boolean; message?: string; error?: string }>('/settings/telegram/test', 'POST');
   },
 };
 

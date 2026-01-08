@@ -1,6 +1,7 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { getDatabase, updateStreak, syncChildBlockStatus } from '../models/database.js';
+import { notifyTaskCompleted, notifyTaskUncompleted, notifyInternetStatus } from '../utils/telegram.js';
 
 const router = express.Router();
 
@@ -111,6 +112,17 @@ router.post('/:id/toggle', async (req, res) => {
       VALUES (?, ?, ?, ?, ?)
     `).run(logId, child.id, child.name, action, newCompleted ? 'success' : 'warning');
 
+    // Send Telegram notification (async, don't wait)
+    if (newCompleted) {
+      notifyTaskCompleted(child.name, task.title, task.points, newPoints).catch(err => {
+        console.error('Telegram notification error:', err);
+      });
+    } else {
+      notifyTaskUncompleted(child.name, task.title).catch(err => {
+        console.error('Telegram notification error:', err);
+      });
+    }
+
     // Sync device block status based on task completion
     let blockStatus = null;
     try {
@@ -124,6 +136,14 @@ router.post('/:id/toggle', async (req, res) => {
           INSERT INTO activity_logs (id, child_id, child_name, action, type)
           VALUES (?, ?, ?, ?, ?)
         `).run(blockLogId, child.id, child.name, blockAction, blockStatus.allTasksDone ? 'success' : 'warning');
+
+        // Notify about internet status change
+        const reason = blockStatus.allTasksDone
+          ? 'Todas as tarefas foram concluídas!'
+          : 'Existem tarefas pendentes';
+        notifyInternetStatus(child.name, !blockStatus.allTasksDone, reason).catch(err => {
+          console.error('Telegram notification error:', err);
+        });
       }
     } catch (blockError) {
       console.error('Error syncing block status:', blockError);

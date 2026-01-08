@@ -1,5 +1,6 @@
 import express from 'express';
 import { getDatabase } from '../models/database.js';
+import { sendTestMessage } from '../utils/telegram.js';
 
 const router = express.Router();
 
@@ -103,5 +104,21 @@ function formatSettings(settings) {
     }
   };
 }
+
+// Send test Telegram message
+router.post('/telegram/test', async (req, res) => {
+  try {
+    const result = await sendTestMessage();
+
+    if (result.success) {
+      res.json({ success: true, message: 'Mensagem de teste enviada com sucesso!' });
+    } else {
+      res.status(400).json({ success: false, error: result.error });
+    }
+  } catch (error) {
+    console.error('Test message error:', error);
+    res.status(500).json({ success: false, error: 'Falha ao enviar mensagem de teste' });
+  }
+});
 
 export default router;

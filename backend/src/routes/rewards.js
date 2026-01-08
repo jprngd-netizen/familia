@@ -1,6 +1,7 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { getDatabase } from '../models/database.js';
+import { notifyRewardRedeemed, notifyRewardRequest } from '../utils/telegram.js';
 
 const router = express.Router();
 
@@ -133,31 +134,41 @@ router.post('/:id/redeem', (req, res) => {
         INSERT INTO activity_logs (id, child_id, child_name, action, type)
         VALUES (?, ?, ?, ?, ?)
       `).run(logId, child.id, child.name, `Solicitou "${reward.title}" - Aguardando aprovação`, 'info');
-      
-      return res.json({ 
-        success: true, 
-        requiresApproval: true, 
+
+      // Send Telegram notification for pending approval
+      notifyRewardRequest(child.name, reward.title, reward.cost).catch(err => {
+        console.error('Telegram notification error:', err);
+      });
+
+      return res.json({
+        success: true,
+        requiresApproval: true,
         requestId,
-        message: 'Pedido enviado para aprovação' 
+        message: 'Pedido enviado para aprovação'
       });
     }
-    
+
     // Immediate redemption
     const newPoints = child.points - reward.cost;
     db.prepare('UPDATE children SET points = ? WHERE id = ?').run(newPoints, child.id);
-    
+
     // Log the action
     const logId = uuidv4();
     db.prepare(`
       INSERT INTO activity_logs (id, child_id, child_name, action, type)
       VALUES (?, ?, ?, ?, ?)
     `).run(logId, child.id, child.name, `Resgatou "${reward.title}"`, 'success');
-    
-    res.json({ 
-      success: true, 
+
+    // Send Telegram notification
+    notifyRewardRedeemed(child.name, reward.title, reward.cost, newPoints).catch(err => {
+      console.error('Telegram notification error:', err);
+    });
+
+    res.json({
+      success: true,
       requiresApproval: false,
       newPoints,
-      message: 'Recompensa resgatada com sucesso!' 
+      message: 'Recompensa resgatada com sucesso!'
     });
   } catch (error) {
     console.error('Redeem reward error:', error);
