@@ -1,11 +1,25 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { getDatabase } from '../models/database.js';
 
 const execAsync = promisify(exec);
 
 const FIREWALL_TYPE = process.env.FIREWALL_TYPE || 'iptables';
 const ENABLE_FIREWALL = process.env.ENABLE_FIREWALL === 'true';
 const NETWORK_INTERFACE = process.env.NETWORK_INTERFACE || 'eth0';
+
+/**
+ * Get all whitelisted domains from database
+ */
+export function getWhitelistedDomains() {
+  try {
+    const db = getDatabase();
+    return db.prepare('SELECT * FROM whitelist_domains ORDER BY domain ASC').all();
+  } catch (error) {
+    console.error('Error fetching whitelist domains:', error);
+    return [];
+  }
+}
 
 /**
  * Execute firewall command with proper error handling

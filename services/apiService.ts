@@ -162,29 +162,46 @@ export const devicesAPI = {
   getAll: async () => {
     return apiRequest<any[]>('/devices');
   },
-  
+
   create: async (data: { name: string; type: string; mac: string; assignedTo?: string }) => {
     return apiRequest<any>('/devices', 'POST', data);
   },
-  
+
   update: async (id: string, data: any) => {
     return apiRequest<any>(`/devices/${id}`, 'PUT', data);
   },
-  
+
   delete: async (id: string) => {
     return apiRequest<{ success: boolean }>(`/devices/${id}`, 'DELETE');
   },
-  
+
   toggleBlock: async (id: string) => {
     return apiRequest<{ success: boolean; isBlocked: boolean; message: string }>(`/devices/${id}/toggle-block`, 'POST');
   },
-  
+
+  toggleWhitelist: async (id: string) => {
+    return apiRequest<{ success: boolean; isWhitelisted: boolean; message: string }>(`/devices/${id}/toggle-whitelist`, 'POST');
+  },
+
   temporaryUnblock: async (id: string, minutes: number) => {
     return apiRequest<{ success: boolean; message: string; expiresAt: string }>(`/devices/${id}/temporary-unblock`, 'POST', { minutes });
   },
-  
+
   getFirewallStatus: async () => {
     return apiRequest<any>('/devices/firewall/status');
+  },
+
+  // Whitelist domains
+  getWhitelistDomains: async () => {
+    return apiRequest<any[]>('/devices/whitelist/domains');
+  },
+
+  addWhitelistDomain: async (domain: string, description?: string) => {
+    return apiRequest<any>('/devices/whitelist/domains', 'POST', { domain, description });
+  },
+
+  deleteWhitelistDomain: async (id: string) => {
+    return apiRequest<{ success: boolean }>(`/devices/whitelist/domains/${id}`, 'DELETE');
   },
 };
 

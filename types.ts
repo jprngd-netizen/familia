@@ -53,7 +53,15 @@ export interface Device {
   status: 'online' | 'offline';
   ip: string;
   isBlocked: boolean;
+  isWhitelisted: boolean;
   assignedTo?: string; // Child ID for automatic blocking
+}
+
+export interface WhitelistDomain {
+  id: string;
+  domain: string;
+  description: string;
+  created_at: string;
 }
 
 export interface SystemSettings {

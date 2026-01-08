@@ -104,10 +104,18 @@ export function initDatabase() {
       ip TEXT,
       status TEXT DEFAULT 'offline' CHECK(status IN ('online', 'offline')),
       is_blocked INTEGER DEFAULT 0,
+      is_whitelisted INTEGER DEFAULT 0,
       assigned_to TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (assigned_to) REFERENCES children(id) ON DELETE SET NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS whitelist_domains (
+      id TEXT PRIMARY KEY,
+      domain TEXT NOT NULL UNIQUE,
+      description TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS activity_logs (
@@ -178,6 +186,24 @@ export function initDatabase() {
       if (!tasksCols.includes('completed_at')) {
         db.exec('ALTER TABLE tasks ADD COLUMN completed_at TEXT');
       }
+
+      // Add is_whitelisted to devices if it doesn't exist
+      const devicesInfo = db.prepare("PRAGMA table_info(devices)").all();
+      const devicesCols = devicesInfo.map(c => c.name);
+
+      if (!devicesCols.includes('is_whitelisted')) {
+        db.exec('ALTER TABLE devices ADD COLUMN is_whitelisted INTEGER DEFAULT 0');
+      }
+
+      // Create whitelist_domains table if it doesn't exist
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS whitelist_domains (
+          id TEXT PRIMARY KEY,
+          domain TEXT NOT NULL UNIQUE,
+          description TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
     } catch (error) {
       // Columns might already exist, ignore errors
     }
@@ -320,6 +346,11 @@ export async function syncChildBlockStatus(childId) {
   const results = [];
 
   for (const device of devices) {
+    // Skip whitelisted devices - they should never be blocked
+    if (device.is_whitelisted) {
+      continue;
+    }
+
     if (allTasksDone) {
       // Unblock device if all tasks are done
       if (device.is_blocked) {

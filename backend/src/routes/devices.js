@@ -1,7 +1,7 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { getDatabase } from '../models/database.js';
-import { blockDevice, unblockDevice, getFirewallStatus, scheduleTemporaryUnblock } from '../utils/firewall.js';
+import { blockDevice, unblockDevice, getFirewallStatus, scheduleTemporaryUnblock, getWhitelistedDomains } from '../utils/firewall.js';
 
 const router = express.Router();
 
@@ -10,10 +10,11 @@ router.get('/', (req, res) => {
   try {
     const db = getDatabase();
     const devices = db.prepare('SELECT * FROM devices ORDER BY name ASC').all();
-    
+
     res.json(devices.map(d => ({
       ...d,
-      isBlocked: Boolean(d.is_blocked)
+      isBlocked: Boolean(d.is_blocked),
+      isWhitelisted: Boolean(d.is_whitelisted)
     })));
   } catch (error) {
     console.error('Get devices error:', error);
@@ -214,6 +215,131 @@ router.get('/firewall/status', async (req, res) => {
   } catch (error) {
     console.error('Get firewall status error:', error);
     res.status(500).json({ error: 'Failed to get firewall status' });
+  }
+});
+
+// Toggle device whitelist status
+router.post('/:id/toggle-whitelist', async (req, res) => {
+  try {
+    const db = getDatabase();
+    const device = db.prepare('SELECT * FROM devices WHERE id = ?').get(req.params.id);
+
+    if (!device) {
+      return res.status(404).json({ error: 'Device not found' });
+    }
+
+    const newWhitelistState = device.is_whitelisted ? 0 : 1;
+
+    // If whitelisting, also unblock the device
+    if (newWhitelistState && device.is_blocked) {
+      await unblockDevice(device.mac, device.ip);
+      db.prepare('UPDATE devices SET is_blocked = 0, is_whitelisted = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+        .run(req.params.id);
+    } else {
+      db.prepare('UPDATE devices SET is_whitelisted = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+        .run(newWhitelistState, req.params.id);
+    }
+
+    // Log the action
+    const logId = uuidv4();
+    const action = newWhitelistState
+      ? `Dispositivo "${device.name}" adicionado à lista branca`
+      : `Dispositivo "${device.name}" removido da lista branca`;
+
+    db.prepare(`
+      INSERT INTO activity_logs (id, child_id, child_name, action, type)
+      VALUES (?, NULL, 'Sistema', ?, ?)
+    `).run(logId, action, 'info');
+
+    res.json({
+      success: true,
+      isWhitelisted: Boolean(newWhitelistState),
+      message: newWhitelistState ? 'Dispositivo na lista branca (nunca será bloqueado)' : 'Dispositivo removido da lista branca'
+    });
+  } catch (error) {
+    console.error('Toggle whitelist error:', error);
+    res.status(500).json({ error: 'Failed to toggle device whitelist' });
+  }
+});
+
+// ==================== WHITELIST DOMAINS ====================
+
+// Get all whitelisted domains
+router.get('/whitelist/domains', (req, res) => {
+  try {
+    const domains = getWhitelistedDomains();
+    res.json(domains);
+  } catch (error) {
+    console.error('Get whitelist domains error:', error);
+    res.status(500).json({ error: 'Failed to fetch whitelist domains' });
+  }
+});
+
+// Add domain to whitelist
+router.post('/whitelist/domains', (req, res) => {
+  try {
+    const { domain, description } = req.body;
+
+    if (!domain) {
+      return res.status(400).json({ error: 'Domain is required' });
+    }
+
+    // Clean up domain (remove protocol, trailing slashes, etc)
+    const cleanDomain = domain.toLowerCase()
+      .replace(/^https?:\/\//, '')
+      .replace(/\/.*$/, '')
+      .trim();
+
+    const db = getDatabase();
+    const id = uuidv4();
+
+    db.prepare(`
+      INSERT INTO whitelist_domains (id, domain, description)
+      VALUES (?, ?, ?)
+    `).run(id, cleanDomain, description || '');
+
+    const newDomain = db.prepare('SELECT * FROM whitelist_domains WHERE id = ?').get(id);
+
+    // Log the action
+    const logId = uuidv4();
+    db.prepare(`
+      INSERT INTO activity_logs (id, child_id, child_name, action, type)
+      VALUES (?, NULL, 'Sistema', ?, ?)
+    `).run(logId, `Domínio "${cleanDomain}" adicionado à lista branca`, 'info');
+
+    res.status(201).json(newDomain);
+  } catch (error) {
+    console.error('Add whitelist domain error:', error);
+    if (error.message.includes('UNIQUE constraint failed')) {
+      return res.status(400).json({ error: 'Este domínio já está na lista branca' });
+    }
+    res.status(500).json({ error: 'Failed to add domain to whitelist' });
+  }
+});
+
+// Delete domain from whitelist
+router.delete('/whitelist/domains/:id', (req, res) => {
+  try {
+    const db = getDatabase();
+
+    const domain = db.prepare('SELECT * FROM whitelist_domains WHERE id = ?').get(req.params.id);
+    if (!domain) {
+      return res.status(404).json({ error: 'Domain not found' });
+    }
+
+    db.prepare('DELETE FROM whitelist_domains WHERE id = ?').run(req.params.id);
+
+    // Log the action
+    const logId = uuidv4();
+    db.prepare(`
+      INSERT INTO activity_logs (id, child_id, child_name, action, type)
+      VALUES (?, NULL, 'Sistema', ?, ?)
+    `).run(logId, `Domínio "${domain.domain}" removido da lista branca`, 'info');
+
+    res.json({ success: true, message: 'Domain removed from whitelist' });
+  } catch (error) {
+    console.error('Delete whitelist domain error:', error);
+    res.status(500).json({ error: 'Failed to delete domain from whitelist' });
   }
 });
 
