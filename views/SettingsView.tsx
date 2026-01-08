@@ -4,10 +4,10 @@ import {
   Users, Monitor, Settings, Plus, Edit2, Trash2, Moon, Sun, X,
   RefreshCw, Key, ShieldCheck, Send, Bell, Bot, Lock, Check,
   AlertCircle, MessageSquare, Smartphone, Zap, Calendar, ExternalLink,
-  CheckCircle2, XCircle, Loader2
+  CheckCircle2, XCircle, Loader2, Shield, Globe
 } from 'lucide-react';
-import { Child, MemberRole, Device, DeviceType, SystemSettings } from '../types';
-import { calendarAPI, settingsAPI } from '../services/apiService';
+import { Child, MemberRole, Device, DeviceType, SystemSettings, WhitelistDomain } from '../types';
+import { calendarAPI, settingsAPI, devicesAPI } from '../services/apiService';
 
 interface SettingsViewProps {
   children: Child[];
@@ -20,12 +20,13 @@ interface SettingsViewProps {
   onUpdateDevice: (device: Device) => void;
   onDeleteDevice: (deviceId: string) => void;
   onToggleDeviceBlock: (deviceId: string) => void;
+  onToggleDeviceWhitelist?: (deviceId: string) => void;
   onUpdateSystemSettings: (settings: SystemSettings) => void;
 }
 
-const SettingsView: React.FC<SettingsViewProps> = ({ 
+const SettingsView: React.FC<SettingsViewProps> = ({
   children, devices, systemSettings, onAddChild, onUpdateChild, onDeleteChild,
-  onAddDevice, onUpdateDevice, onDeleteDevice, onToggleDeviceBlock, onUpdateSystemSettings
+  onAddDevice, onUpdateDevice, onDeleteDevice, onToggleDeviceBlock, onToggleDeviceWhitelist, onUpdateSystemSettings
 }) => {
   const [activeTab, setActiveTab] = useState<'members' | 'devices' | 'system'>('members');
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -65,6 +66,42 @@ const SettingsView: React.FC<SettingsViewProps> = ({
   // Telegram test state
   const [telegramTestStatus, setTelegramTestStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [telegramTestMessage, setTelegramTestMessage] = useState('');
+
+  // Whitelist domains state
+  const [whitelistDomains, setWhitelistDomains] = useState<WhitelistDomain[]>([]);
+  const [newDomain, setNewDomain] = useState('');
+  const [newDomainDesc, setNewDomainDesc] = useState('');
+  const [domainLoading, setDomainLoading] = useState(false);
+
+  // Fetch whitelist domains
+  useEffect(() => {
+    if (isUnlocked) {
+      devicesAPI.getWhitelistDomains().then(setWhitelistDomains).catch(console.error);
+    }
+  }, [isUnlocked]);
+
+  const handleAddDomain = async () => {
+    if (!newDomain.trim()) return;
+    setDomainLoading(true);
+    try {
+      const added = await devicesAPI.addWhitelistDomain(newDomain, newDomainDesc);
+      setWhitelistDomains(prev => [...prev, added]);
+      setNewDomain('');
+      setNewDomainDesc('');
+    } catch (error: any) {
+      alert(error.message || 'Erro ao adicionar domínio');
+    }
+    setDomainLoading(false);
+  };
+
+  const handleDeleteDomain = async (id: string) => {
+    try {
+      await devicesAPI.deleteWhitelistDomain(id);
+      setWhitelistDomains(prev => prev.filter(d => d.id !== id));
+    } catch (error) {
+      console.error('Error deleting domain:', error);
+    }
+  };
 
   // Fetch calendar status on mount
   useEffect(() => {
@@ -307,40 +344,119 @@ const SettingsView: React.FC<SettingsViewProps> = ({
           )}
 
           {activeTab === 'devices' && (
-            <div className={`p-8 rounded-[3rem] border shadow-sm animate-in slide-in-from-right-4 duration-300 ${systemSettings.theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="text-xl font-bold dark:text-white">Rede Familiar</h3>
-                <button onClick={handleOpenAddDeviceModal} className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-100 transition shadow-sm border border-indigo-100"><Plus size={18} /> Adicionar Device</button>
+            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+              {/* Devices Section */}
+              <div className={`p-8 rounded-[3rem] border shadow-sm ${systemSettings.theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <div className="flex justify-between items-center mb-8">
+                  <h3 className="text-xl font-bold dark:text-white">Rede Familiar</h3>
+                  <button onClick={handleOpenAddDeviceModal} className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-100 transition shadow-sm border border-indigo-100"><Plus size={18} /> Adicionar Device</button>
+                </div>
+                <div className="space-y-4">
+                  {devices.map(device => {
+                    const assignedChild = children.find(c => c.id === device.assignedTo);
+                    return (
+                    <div key={device.id} className={`p-6 border rounded-[2rem] flex items-center justify-between transition-all group ${device.isWhitelisted ? 'border-amber-200 bg-amber-50/30 dark:border-amber-800 dark:bg-amber-900/10' : systemSettings.theme === 'dark' ? 'bg-slate-800/50 border-slate-700 hover:border-indigo-500' : 'bg-slate-50/30 border-slate-50 hover:border-indigo-200'}`}>
+                      <div className="flex items-center gap-5">
+                         <div className={`p-4 rounded-2xl ${device.isWhitelisted ? 'bg-amber-100 text-amber-600' : device.isBlocked ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                            {device.isWhitelisted ? <Shield size={24} /> : <Smartphone size={24} />}
+                         </div>
+                         <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-bold dark:text-white">{device.name}</p>
+                              {device.isWhitelisted && (
+                                <span className="text-[8px] font-black uppercase bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">Lista Branca</span>
+                              )}
+                            </div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{device.mac}</p>
+                            {assignedChild && (
+                              <p className="text-[10px] font-bold text-indigo-500 mt-1 flex items-center gap-1">
+                                <Users size={10} /> {assignedChild.name}
+                              </p>
+                            )}
+                         </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {!device.isWhitelisted && (
+                          <button onClick={() => onToggleDeviceBlock(device.id)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${device.isBlocked ? 'bg-rose-600 text-white shadow-lg shadow-rose-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
+                            {device.isBlocked ? 'Bloqueado' : 'Liberado'}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => onToggleDeviceWhitelist?.(device.id)}
+                          title={device.isWhitelisted ? 'Remover da lista branca' : 'Adicionar à lista branca (nunca bloquear)'}
+                          className={`p-2 rounded-xl transition-all ${device.isWhitelisted ? 'bg-amber-500 text-white' : 'text-slate-400 hover:text-amber-600 hover:bg-amber-50'}`}
+                        >
+                          <Shield size={18} />
+                        </button>
+                        <button onClick={() => handleOpenEditDeviceModal(device)} className="p-2 text-slate-400 hover:text-indigo-600 opacity-100 sm:opacity-0 group-hover:opacity-100 transition"><Edit2 size={18} /></button>
+                        <button onClick={() => onDeleteDevice(device.id)} className="p-2 text-slate-400 hover:text-rose-500 opacity-100 sm:opacity-0 group-hover:opacity-100 transition"><Trash2 size={18} /></button>
+                      </div>
+                    </div>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="space-y-4">
-                {devices.map(device => {
-                  const assignedChild = children.find(c => c.id === device.assignedTo);
-                  return (
-                  <div key={device.id} className={`p-6 border rounded-[2rem] flex items-center justify-between transition-all group ${systemSettings.theme === 'dark' ? 'bg-slate-800/50 border-slate-700 hover:border-indigo-500' : 'bg-slate-50/30 border-slate-50 hover:border-indigo-200'}`}>
-                    <div className="flex items-center gap-5">
-                       <div className={`p-4 rounded-2xl ${device.isBlocked ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                          <Smartphone size={24} />
-                       </div>
-                       <div>
-                          <p className="font-bold dark:text-white">{device.name}</p>
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{device.mac}</p>
-                          {assignedChild && (
-                            <p className="text-[10px] font-bold text-indigo-500 mt-1 flex items-center gap-1">
-                              <Users size={10} /> {assignedChild.name}
-                            </p>
-                          )}
-                       </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <button onClick={() => onToggleDeviceBlock(device.id)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${device.isBlocked ? 'bg-rose-600 text-white shadow-lg shadow-rose-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
-                        {device.isBlocked ? 'Bloqueado' : 'Acesso Liberado'}
-                      </button>
-                      <button onClick={() => handleOpenEditDeviceModal(device)} className="p-2 text-slate-400 hover:text-indigo-600 opacity-100 sm:opacity-0 group-hover:opacity-100 transition"><Edit2 size={18} /></button>
-                      <button onClick={() => onDeleteDevice(device.id)} className="p-2 text-slate-400 hover:text-rose-500 opacity-100 sm:opacity-0 group-hover:opacity-100 transition"><Trash2 size={18} /></button>
-                    </div>
+
+              {/* Domain Whitelist Section */}
+              <div className={`p-8 rounded-[3rem] border shadow-sm ${systemSettings.theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h3 className="text-xl font-bold dark:text-white flex items-center gap-3"><Globe className="text-amber-500" /> Sites Sempre Permitidos</h3>
+                    <p className="text-xs text-slate-500 mt-1">Estes sites ficam acessíveis mesmo quando o dispositivo está bloqueado</p>
                   </div>
-                  );
-                })}
+                </div>
+
+                {/* Add domain form */}
+                <div className="flex gap-3 mb-6">
+                  <input
+                    type="text"
+                    value={newDomain}
+                    onChange={e => setNewDomain(e.target.value)}
+                    placeholder="ex: escola.edu.br"
+                    className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-amber-500"
+                  />
+                  <input
+                    type="text"
+                    value={newDomainDesc}
+                    onChange={e => setNewDomainDesc(e.target.value)}
+                    placeholder="Descrição (opcional)"
+                    className="w-48 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-amber-500"
+                  />
+                  <button
+                    onClick={handleAddDomain}
+                    disabled={domainLoading || !newDomain.trim()}
+                    className="bg-amber-500 text-white px-5 py-3 rounded-xl font-bold text-sm hover:bg-amber-600 transition disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {domainLoading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                    Adicionar
+                  </button>
+                </div>
+
+                {/* Domain list */}
+                <div className="space-y-2">
+                  {whitelistDomains.length === 0 ? (
+                    <p className="text-sm text-slate-400 text-center py-4">Nenhum site na lista branca. Adicione domínios acima.</p>
+                  ) : (
+                    whitelistDomains.map(domain => (
+                      <div key={domain.id} className={`flex items-center justify-between p-4 rounded-xl ${systemSettings.theme === 'dark' ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
+                        <div className="flex items-center gap-3">
+                          <Globe size={18} className="text-amber-500" />
+                          <div>
+                            <p className="font-bold dark:text-white">{domain.domain}</p>
+                            {domain.description && <p className="text-xs text-slate-400">{domain.description}</p>}
+                          </div>
+                        </div>
+                        <button onClick={() => handleDeleteDomain(domain.id)} className="p-2 text-slate-400 hover:text-rose-500">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <p className="text-[10px] text-slate-400 mt-4">
+                  Exemplos: escola.edu.br, Khan Academy, Google Classroom, etc.
+                </p>
               </div>
             </div>
           )}
