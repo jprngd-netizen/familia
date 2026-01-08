@@ -4,7 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { initDatabase } from './models/database.js';
+import { initDatabase, resetDailyTasks } from './models/database.js';
 import childrenRoutes from './routes/children.js';
 import tasksRoutes from './routes/tasks.js';
 import rewardsRoutes from './routes/rewards.js';
@@ -37,6 +37,12 @@ app.use(requestLogger);
 try {
   initDatabase();
   console.log('✅ Database initialized successfully');
+
+  // Reset recurring tasks on startup
+  const resetCount = resetDailyTasks();
+  if (resetCount > 0) {
+    console.log(`🔄 Reset ${resetCount} recurring tasks`);
+  }
 } catch (error) {
   console.error('❌ Failed to initialize database:', error);
   process.exit(1);

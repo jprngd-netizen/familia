@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { 
-  ArrowLeft, Zap, Clock, TrendingUp, Plus, Trash2, 
+import {
+  ArrowLeft, Zap, Clock, TrendingUp, Plus, Trash2,
   CheckCircle2, AlertTriangle, ShieldCheck, Lock, Unlock,
-  Coins, Gift, History, Repeat, CalendarDays, Edit, Save
+  Coins, Gift, History, Repeat, CalendarDays, Edit, Save,
+  Flame, Trophy
 } from 'lucide-react';
 import { Child, Task } from '../types';
 
@@ -19,8 +20,30 @@ interface ChildDetailViewProps {
   onDeleteChild?: (childId: string) => void;
 }
 
-const ChildDetailView: React.FC<ChildDetailViewProps> = ({ 
-  child, onBack, onAdjustPoints, onToggleTask, onUnlock, onAddTask, onUpdateTask, onDeleteChild 
+// Helper to check if task deadline is approaching
+const getDeadlineStatus = (task: Task): { status: 'ok' | 'warning' | 'urgent' | 'overdue'; message: string } | null => {
+  if (task.completed || !task.schedule?.end) return null;
+
+  const now = new Date();
+  const [hours, minutes] = task.schedule.end.split(':').map(Number);
+  const deadline = new Date();
+  deadline.setHours(hours, minutes, 0, 0);
+
+  const diffMs = deadline.getTime() - now.getTime();
+  const diffMins = Math.round(diffMs / 60000);
+
+  if (diffMins < 0) {
+    return { status: 'overdue', message: 'Atrasado!' };
+  } else if (diffMins <= 15) {
+    return { status: 'urgent', message: `${diffMins} min restantes` };
+  } else if (diffMins <= 60) {
+    return { status: 'warning', message: `${diffMins} min restantes` };
+  }
+  return null;
+};
+
+const ChildDetailView: React.FC<ChildDetailViewProps> = ({
+  child, onBack, onAdjustPoints, onToggleTask, onUnlock, onAddTask, onUpdateTask, onDeleteChild
 }) => {
   const [newTask, setNewTask] = useState<{
     title: string;
@@ -216,6 +239,25 @@ const ChildDetailView: React.FC<ChildDetailViewProps> = ({
                 <p className="text-xl font-bold">{(child.points / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
              </div>
           </div>
+
+          {/* Streak Card */}
+          <div className="bg-gradient-to-br from-orange-500 to-amber-500 p-8 rounded-[2.5rem] text-white shadow-xl">
+            <div className="flex justify-between items-start mb-6">
+              <Flame size={32} className="text-orange-200" />
+              <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Sequência</span>
+            </div>
+            <p className="text-sm font-bold text-orange-100 mb-1">Dias Consecutivos</p>
+            <h4 className="text-4xl font-black mb-6">
+              {child.currentStreak || 0} <span className="text-lg font-medium opacity-60">dias</span>
+            </h4>
+            <div className="p-4 bg-white/10 rounded-2xl border border-white/10 flex items-center gap-3">
+              <Trophy size={20} className="text-amber-200" />
+              <div>
+                <p className="text-xs font-medium text-orange-100">Recorde pessoal:</p>
+                <p className="text-lg font-bold">{child.longestStreak || 0} dias</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="lg:col-span-2 space-y-8">
@@ -245,15 +287,34 @@ const ChildDetailView: React.FC<ChildDetailViewProps> = ({
                       </button>
                       <div>
                         <p className={`text-base font-bold ${task.completed ? 'text-slate-400 line-through' : 'text-slate-700'}`}>{task.title}</p>
-                        <div className="flex items-center gap-3 mt-1">
+                        <div className="flex items-center gap-3 mt-1 flex-wrap">
                           {task.recurrence && task.recurrence !== 'none' && (
                             <span className="flex items-center gap-1 text-[9px] font-black uppercase text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">
                               <Repeat size={10} /> {getRecurrenceLabel(task.recurrence)}
                             </span>
                           )}
+                          {task.schedule?.end && !task.completed && (
+                            <span className="flex items-center gap-1 text-[9px] font-black uppercase text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full">
+                              <Clock size={10} /> até {task.schedule.end}
+                            </span>
+                          )}
+                          {(() => {
+                            const deadline = getDeadlineStatus(task);
+                            if (!deadline) return null;
+                            const colors: Record<string, string> = {
+                              overdue: 'text-rose-600 bg-rose-50 animate-pulse',
+                              urgent: 'text-rose-600 bg-rose-50',
+                              warning: 'text-amber-600 bg-amber-50'
+                            };
+                            return (
+                              <span className={`flex items-center gap-1 text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${colors[deadline.status]}`}>
+                                <AlertTriangle size={10} /> {deadline.message}
+                              </span>
+                            );
+                          })()}
                           {task.points === 0 && !task.completed && (
                             <span className="flex items-center gap-1 text-[9px] font-black uppercase text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-                              <AlertTriangle size={10} /> Sem Pontos Atribuídos
+                              <AlertTriangle size={10} /> Sem Pontos
                             </span>
                           )}
                         </div>

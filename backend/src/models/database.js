@@ -40,6 +40,9 @@ export function initDatabase() {
       points INTEGER DEFAULT 0,
       unlocked_hours INTEGER DEFAULT 0,
       has_tv_access INTEGER DEFAULT 0,
+      current_streak INTEGER DEFAULT 0,
+      longest_streak INTEGER DEFAULT 0,
+      last_streak_date TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
@@ -50,6 +53,7 @@ export function initDatabase() {
       title TEXT NOT NULL,
       points INTEGER NOT NULL,
       completed INTEGER DEFAULT 0,
+      completed_at TEXT,
       category TEXT NOT NULL CHECK(category IN ('School', 'Chores', 'Health', 'Personal')),
       recurrence TEXT CHECK(recurrence IN ('none', 'daily', 'weekdays', 'weekends', 'weekly')),
       schedule_start TEXT,
@@ -151,8 +155,137 @@ export function initDatabase() {
     INSERT OR IGNORE INTO system_settings (id) VALUES (1);
   `);
 
+  // Run migrations for existing databases
+    try {
+      // Add streak columns to children if they don't exist
+      const childrenInfo = db.prepare("PRAGMA table_info(children)").all();
+      const childrenCols = childrenInfo.map(c => c.name);
+
+      if (!childrenCols.includes('current_streak')) {
+        db.exec('ALTER TABLE children ADD COLUMN current_streak INTEGER DEFAULT 0');
+      }
+      if (!childrenCols.includes('longest_streak')) {
+        db.exec('ALTER TABLE children ADD COLUMN longest_streak INTEGER DEFAULT 0');
+      }
+      if (!childrenCols.includes('last_streak_date')) {
+        db.exec('ALTER TABLE children ADD COLUMN last_streak_date TEXT');
+      }
+
+      // Add completed_at to tasks if it doesn't exist
+      const tasksInfo = db.prepare("PRAGMA table_info(tasks)").all();
+      const tasksCols = tasksInfo.map(c => c.name);
+
+      if (!tasksCols.includes('completed_at')) {
+        db.exec('ALTER TABLE tasks ADD COLUMN completed_at TEXT');
+      }
+    } catch (error) {
+      // Columns might already exist, ignore errors
+    }
+
   console.log('✅ Database schema created successfully');
   return db;
+}
+
+// Reset daily/recurring tasks at midnight
+export function resetDailyTasks() {
+  const db = getDatabase();
+  const today = new Date().toISOString().split('T')[0];
+  const dayOfWeek = new Date().getDay(); // 0 = Sunday, 6 = Saturday
+  const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+  // Get tasks that need to be reset
+  const tasksToReset = db.prepare(`
+    SELECT id, recurrence, completed_at FROM tasks
+    WHERE completed = 1
+    AND recurrence != 'none'
+    AND (completed_at IS NULL OR date(completed_at) < date(?))
+  `).all(today);
+
+  let resetCount = 0;
+
+  for (const task of tasksToReset) {
+    let shouldReset = false;
+
+    switch (task.recurrence) {
+      case 'daily':
+        shouldReset = true;
+        break;
+      case 'weekdays':
+        shouldReset = isWeekday;
+        break;
+      case 'weekends':
+        shouldReset = isWeekend;
+        break;
+      case 'weekly':
+        // Reset if completed more than 7 days ago
+        if (task.completed_at) {
+          const completedDate = new Date(task.completed_at);
+          const daysSince = Math.floor((Date.now() - completedDate.getTime()) / (1000 * 60 * 60 * 24));
+          shouldReset = daysSince >= 7;
+        } else {
+          shouldReset = true;
+        }
+        break;
+    }
+
+    if (shouldReset) {
+      db.prepare('UPDATE tasks SET completed = 0, completed_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(task.id);
+      resetCount++;
+    }
+  }
+
+  if (resetCount > 0) {
+    console.log(`🔄 Reset ${resetCount} recurring tasks`);
+  }
+
+  return resetCount;
+}
+
+// Update streak for a child
+export function updateStreak(childId) {
+  const db = getDatabase();
+  const today = new Date().toISOString().split('T')[0];
+
+  const child = db.prepare('SELECT current_streak, longest_streak, last_streak_date FROM children WHERE id = ?').get(childId);
+  if (!child) return null;
+
+  let newStreak = child.current_streak || 0;
+  let longestStreak = child.longest_streak || 0;
+
+  if (child.last_streak_date) {
+    const lastDate = new Date(child.last_streak_date);
+    const todayDate = new Date(today);
+    const daysDiff = Math.floor((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysDiff === 0) {
+      // Same day, no change
+      return { currentStreak: newStreak, longestStreak };
+    } else if (daysDiff === 1) {
+      // Consecutive day, increment streak
+      newStreak++;
+    } else {
+      // Missed a day, reset streak
+      newStreak = 1;
+    }
+  } else {
+    // First task ever
+    newStreak = 1;
+  }
+
+  // Update longest streak if needed
+  if (newStreak > longestStreak) {
+    longestStreak = newStreak;
+  }
+
+  // Save to database
+  db.prepare(`
+    UPDATE children
+    SET current_streak = ?, longest_streak = ?, last_streak_date = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(newStreak, longestStreak, today, childId);
+
+  return { currentStreak: newStreak, longestStreak };
 }
 
 export function closeDatabase() {

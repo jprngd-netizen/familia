@@ -81,6 +81,8 @@ export interface Child {
   unlockedHours: number;
   hasTVAccess: boolean;
   punishments: Punishment[];
+  currentStreak?: number;
+  longestStreak?: number;
 }
 
 export interface Punishment {

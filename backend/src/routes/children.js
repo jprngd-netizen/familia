@@ -9,9 +9,10 @@ router.get('/', (req, res) => {
   try {
     const db = getDatabase();
     const children = db.prepare(`
-      SELECT 
+      SELECT
         id, name, avatar, role, birthday, pin,
         points, unlocked_hours, has_tv_access,
+        current_streak, longest_streak, last_streak_date,
         created_at, updated_at
       FROM children
       ORDER BY role DESC, name ASC
@@ -25,6 +26,9 @@ router.get('/', (req, res) => {
       return {
         ...child,
         hasTVAccess: Boolean(child.has_tv_access),
+        unlockedHours: child.unlocked_hours,
+        currentStreak: child.current_streak || 0,
+        longestStreak: child.longest_streak || 0,
         tasks: tasks.map(t => ({
           ...t,
           completed: Boolean(t.completed),

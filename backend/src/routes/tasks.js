@@ -1,6 +1,6 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { getDatabase } from '../models/database.js';
+import { getDatabase, updateStreak } from '../models/database.js';
 
 const router = express.Router();
 
@@ -87,7 +87,8 @@ router.post('/:id/toggle', (req, res) => {
     }
 
     const newCompleted = task.completed ? 0 : 1;
-    db.prepare('UPDATE tasks SET completed = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(newCompleted, req.params.id);
+    const completedAt = newCompleted ? new Date().toISOString() : null;
+    db.prepare('UPDATE tasks SET completed = ?, completed_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(newCompleted, completedAt, req.params.id);
     
     // Update child points
     const child = db.prepare('SELECT * FROM children WHERE id = ?').get(task.child_id);
@@ -96,6 +97,12 @@ router.post('/:id/toggle', (req, res) => {
     
     db.prepare('UPDATE children SET points = ? WHERE id = ?').run(newPoints, child.id);
     
+    // Update streak if completing a task
+    let streakData = null;
+    if (newCompleted) {
+      streakData = updateStreak(child.id);
+    }
+
     // Log the action
     const logId = uuidv4();
     const action = newCompleted ? `Completou "${task.title}" (+${task.points} pontos)` : `Desmarcou "${task.title}" (-${task.points} pontos)`;
@@ -103,8 +110,13 @@ router.post('/:id/toggle', (req, res) => {
       INSERT INTO activity_logs (id, child_id, child_name, action, type)
       VALUES (?, ?, ?, ?, ?)
     `).run(logId, child.id, child.name, action, newCompleted ? 'success' : 'warning');
-    
-    res.json({ success: true, completed: Boolean(newCompleted), newPoints });
+
+    res.json({
+      success: true,
+      completed: Boolean(newCompleted),
+      newPoints,
+      streak: streakData
+    });
   } catch (error) {
     console.error('Toggle task error:', error);
     res.status(500).json({ error: 'Failed to toggle task' });
