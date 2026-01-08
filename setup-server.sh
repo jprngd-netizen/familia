@@ -72,13 +72,18 @@ if [ "$NEED_NODE_INSTALL" = true ]; then
     echo "Node.js installed: $(node --version)"
 fi
 
-# 2. Install backend dependencies
+# 2. Install build tools (needed for native modules like bcrypt)
+echo ""
+echo "=== Installing build tools ==="
+sudo apt-get install -y build-essential python3
+
+# 3. Install backend dependencies
 echo ""
 echo "=== Installing backend dependencies ==="
 cd "$SCRIPT_DIR/backend"
-npm install --production
+npm install --omit=dev
 
-# 3. Build frontend (frontend is in root directory)
+# 4. Build frontend (frontend is in root directory)
 echo ""
 echo "=== Building frontend ==="
 cd "$SCRIPT_DIR"
