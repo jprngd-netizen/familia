@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, Monitor, Settings, Plus, Edit2, Trash2, Moon, Sun, X, 
+import {
+  Users, Monitor, Settings, Plus, Edit2, Trash2, Moon, Sun, X,
   RefreshCw, Key, ShieldCheck, Send, Bell, Bot, Lock, Check,
-  AlertCircle, MessageSquare, Smartphone, Zap
+  AlertCircle, MessageSquare, Smartphone, Zap, Calendar, ExternalLink,
+  CheckCircle2, XCircle, Loader2
 } from 'lucide-react';
 import { Child, MemberRole, Device, DeviceType, SystemSettings } from '../types';
+import { calendarAPI } from '../services/apiService';
 
 interface SettingsViewProps {
   children: Child[];
@@ -51,6 +53,42 @@ const SettingsView: React.FC<SettingsViewProps> = ({
   const [deviceIsBlocked, setDeviceIsBlocked] = useState(false);
 
   const roles: MemberRole[] = ['Criança', 'Adulto', 'Visitante', 'Empregado(a)', 'Outros'];
+
+  // Google Calendar State
+  const [calendarStatus, setCalendarStatus] = useState<{ configured: boolean; connected: boolean; loading: boolean }>({
+    configured: false,
+    connected: false,
+    loading: true
+  });
+
+  // Fetch calendar status on mount
+  useEffect(() => {
+    const fetchCalendarStatus = async () => {
+      try {
+        const status = await calendarAPI.getStatus();
+        setCalendarStatus({ ...status, loading: false });
+      } catch (error) {
+        setCalendarStatus({ configured: false, connected: false, loading: false });
+      }
+    };
+    if (isUnlocked) {
+      fetchCalendarStatus();
+    }
+  }, [isUnlocked]);
+
+  const handleConnectCalendar = () => {
+    // Open in same window - will redirect back after auth
+    window.location.href = calendarAPI.getAuthUrl();
+  };
+
+  const handleDisconnectCalendar = async () => {
+    try {
+      await calendarAPI.disconnect();
+      setCalendarStatus(prev => ({ ...prev, connected: false }));
+    } catch (error) {
+      console.error('Failed to disconnect calendar:', error);
+    }
+  };
 
   // Verificar PIN de administrador
   const handlePinSubmit = (e?: React.FormEvent) => {
@@ -307,6 +345,82 @@ const SettingsView: React.FC<SettingsViewProps> = ({
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Google Calendar Section */}
+              <div className={`p-8 rounded-[3rem] border shadow-sm ${systemSettings.theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <div className="flex justify-between items-center mb-8">
+                  <h3 className="text-xl font-black flex items-center gap-3 dark:text-white"><Calendar className="text-blue-500" /> Google Calendar</h3>
+                  {calendarStatus.loading ? (
+                    <Loader2 size={20} className="animate-spin text-slate-400" />
+                  ) : calendarStatus.connected ? (
+                    <span className="flex items-center gap-2 text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest">
+                      <CheckCircle2 size={16} /> Conectado
+                    </span>
+                  ) : calendarStatus.configured ? (
+                    <span className="flex items-center gap-2 text-amber-600 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest">
+                      <AlertCircle size={16} /> Não Conectado
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2 text-slate-400 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest">
+                      <XCircle size={16} /> Não Configurado
+                    </span>
+                  )}
+                </div>
+
+                {calendarStatus.connected ? (
+                  <div className="space-y-6">
+                    <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-[2rem] border border-emerald-100 dark:border-emerald-800">
+                      <p className="font-bold text-emerald-900 dark:text-emerald-300 mb-2">Calendário Conectado!</p>
+                      <p className="text-sm text-emerald-700 dark:text-emerald-400/70">
+                        Seus eventos do Google Calendar aparecerão automaticamente no Modo TV.
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleDisconnectCalendar}
+                      className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-bold text-sm hover:underline"
+                    >
+                      <XCircle size={16} /> Desconectar Google Calendar
+                    </button>
+                  </div>
+                ) : calendarStatus.configured ? (
+                  <div className="space-y-6">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-[2rem] border border-blue-100 dark:border-blue-800">
+                      <p className="font-bold text-blue-900 dark:text-blue-300 mb-2">Pronto para Conectar</p>
+                      <p className="text-sm text-blue-700 dark:text-blue-400/70">
+                        Clique no botão abaixo para autorizar o acesso ao seu Google Calendar.
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleConnectCalendar}
+                      className="w-full flex items-center justify-center gap-3 bg-blue-600 text-white px-6 py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700 transition"
+                    >
+                      <Calendar size={20} /> Conectar Google Calendar <ExternalLink size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-[2rem] border border-amber-100 dark:border-amber-800">
+                      <p className="font-bold text-amber-900 dark:text-amber-300 mb-2">Configuração Necessária</p>
+                      <p className="text-sm text-amber-700 dark:text-amber-400/70 leading-relaxed">
+                        Para usar o Google Calendar, adicione as credenciais OAuth no arquivo <code className="bg-amber-100 dark:bg-amber-800 px-2 py-0.5 rounded">backend/.env</code>:
+                      </p>
+                      <pre className="mt-4 text-xs bg-slate-900 text-slate-300 p-4 rounded-xl overflow-x-auto">
+{`GOOGLE_CLIENT_ID=seu-client-id
+GOOGLE_CLIENT_SECRET=seu-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:5000/api/calendar/oauth2callback`}
+                      </pre>
+                    </div>
+                    <a
+                      href="https://console.cloud.google.com/apis/credentials"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold text-sm hover:underline"
+                    >
+                      <ExternalLink size={16} /> Criar credenciais no Google Cloud Console
+                    </a>
+                  </div>
+                )}
               </div>
 
               {/* Telegram Section */}

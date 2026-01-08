@@ -226,6 +226,19 @@ export const calendarAPI = {
   getEvents: async () => {
     return apiRequest<any[]>('/calendar/events');
   },
+
+  getStatus: async () => {
+    return apiRequest<{ configured: boolean; connected: boolean; authUrl: string | null }>('/calendar/status');
+  },
+
+  disconnect: async () => {
+    return apiRequest<{ success: boolean; message: string }>('/calendar/disconnect', 'POST');
+  },
+
+  // Returns the URL to redirect user to for OAuth
+  getAuthUrl: () => {
+    return `${API_BASE_URL.replace('/api', '')}/api/calendar/auth`;
+  },
 };
 
 // ==================== HEALTH CHECK ====================

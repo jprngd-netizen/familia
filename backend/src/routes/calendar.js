@@ -5,8 +5,34 @@ import db from '../models/database.js';
 
 const router = express.Router();
 
+// Check if Google Calendar is configured and connected
+router.get('/status', (req, res) => {
+  const hasCredentials = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('google_calendar_tokens');
+  const isConnected = !!row;
+
+  res.json({
+    configured: hasCredentials,
+    connected: isConnected,
+    authUrl: hasCredentials ? '/api/calendar/auth' : null
+  });
+});
+
+// Disconnect Google Calendar
+router.post('/disconnect', (req, res) => {
+  try {
+    db.prepare('DELETE FROM settings WHERE key = ?').run('google_calendar_tokens');
+    res.json({ success: true, message: 'Google Calendar disconnected' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to disconnect' });
+  }
+});
+
 // Redirects to Google's consent screen
 router.get('/auth', (req, res) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.status(400).send('Google Calendar not configured. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to .env');
+  }
   const authUrl = calendarService.getAuthUrl();
   res.redirect(authUrl);
 });
