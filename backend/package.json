@@ -10,15 +10,21 @@
     "init-db": "node src/scripts/initDatabase.js",
     "test": "echo \"Backend tests not implemented yet\""
   },
-  "keywords": ["family", "portal", "parental-control", "firewall"],
+  "keywords": [
+    "family",
+    "portal",
+    "parental-control",
+    "firewall"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "better-sqlite3": "^9.2.2",
     "bcrypt": "^5.1.1",
+    "better-sqlite3": "^9.2.2",
+    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "googleapis": "^170.0.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

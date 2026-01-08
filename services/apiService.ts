@@ -70,15 +70,15 @@ export const childrenAPI = {
   },
   
   adjustPoints: async (id: string, amount: number, reason: string) => {
-    return apiRequest<{ success: boolean; newPoints: number }>(`/children/${id}/adjust-points', 'POST', { amount, reason });
+    return apiRequest<{ success: boolean; newPoints: number }>(`/children/${id}/adjust-points`, 'POST', { amount, reason });
   },
   
   quickUnlock: async (id: string, hours = 1) => {
-    return apiRequest<{ success: boolean; unlockedHours: number }>(`/children/${id}/quick-unlock', 'POST', { hours });
+    return apiRequest<{ success: boolean; unlockedHours: number }>(`/children/${id}/quick-unlock`, 'POST', { hours });
   },
   
   toggleTV: async (id: string) => {
-    return apiRequest<{ success: boolean; hasTVAccess: boolean }>(`/children/${id}/toggle-tv', 'POST');
+    return apiRequest<{ success: boolean; hasTVAccess: boolean }>(`/children/${id}/toggle-tv`, 'POST');
   },
 };
 
@@ -94,7 +94,7 @@ export const tasksAPI = {
   },
   
   toggle: async (id: string) => {
-    return apiRequest<{ success: boolean; completed: boolean; newPoints: number }>(`/tasks/${id}/toggle', 'POST');
+    return apiRequest<{ success: boolean; completed: boolean; newPoints: number }>(`/tasks/${id}/toggle`, 'POST');
   },
   
   update: async (id: string, data: any) => {
@@ -126,7 +126,7 @@ export const rewardsAPI = {
   },
   
   redeem: async (id: string, childId: string) => {
-    return apiRequest<{ success: boolean; requiresApproval: boolean; message: string; newPoints?: number; requestId?: string }>(`/rewards/${id}/redeem', 'POST', { childId });
+    return apiRequest<{ success: boolean; requiresApproval: boolean; message: string; newPoints?: number; requestId?: string }>(`/rewards/${id}/redeem`, 'POST', { childId });
   },
   
   getPendingRequests: async () => {
@@ -134,7 +134,7 @@ export const rewardsAPI = {
   },
   
   processRequest: async (id: string, approve: boolean) => {
-    return apiRequest<{ success: boolean; approved: boolean }>(`/rewards/requests/${id}/process', 'POST', { approve });
+    return apiRequest<{ success: boolean; approved: boolean }>(`/rewards/requests/${id}/process`, 'POST', { approve });
   },
 };
 
@@ -158,11 +158,11 @@ export const devicesAPI = {
   },
   
   toggleBlock: async (id: string) => {
-    return apiRequest<{ success: boolean; isBlocked: boolean; message: string }>(`/devices/${id}/toggle-block', 'POST');
+    return apiRequest<{ success: boolean; isBlocked: boolean; message: string }>(`/devices/${id}/toggle-block`, 'POST');
   },
   
   temporaryUnblock: async (id: string, minutes: number) => {
-    return apiRequest<{ success: boolean; message: string; expiresAt: string }>(`/devices/${id}/temporary-unblock', 'POST', { minutes });
+    return apiRequest<{ success: boolean; message: string; expiresAt: string }>(`/devices/${id}/temporary-unblock`, 'POST', { minutes });
   },
   
   getFirewallStatus: async () => {

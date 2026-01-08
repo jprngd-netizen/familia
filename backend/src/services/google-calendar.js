@@ -1,6 +1,6 @@
 
 import { google } from 'googleapis';
-import dotenv from 'dotenv';n
+import dotenv from 'dotenv';
 dotenv.config();
 
 // --- Configuration ---
