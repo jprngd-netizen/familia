@@ -1,12 +1,13 @@
 
 import express from 'express';
 import calendarService from '../services/google-calendar.js';
-import db from '../models/database.js';
+import { getDatabase } from '../models/database.js';
 
 const router = express.Router();
 
 // Check if Google Calendar is configured and connected
 router.get('/status', (req, res) => {
+  const db = getDatabase();
   const hasCredentials = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
   const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('google_calendar_tokens');
   const isConnected = !!row;
@@ -21,6 +22,7 @@ router.get('/status', (req, res) => {
 // Disconnect Google Calendar
 router.post('/disconnect', (req, res) => {
   try {
+    const db = getDatabase();
     db.prepare('DELETE FROM settings WHERE key = ?').run('google_calendar_tokens');
     res.json({ success: true, message: 'Google Calendar disconnected' });
   } catch (error) {
@@ -42,8 +44,9 @@ router.get('/oauth2callback', async (req, res) => {
   const { code } = req.query;
   try {
     const tokens = await calendarService.getAccessToken(code);
-    
-    // Store tokens securely. For this example, we'll store them in the database.
+
+    // Store tokens securely in the database.
+    const db = getDatabase();
     const stmt = db.prepare('REPLACE INTO settings (key, value) VALUES (?, ?)');
     stmt.run('google_calendar_tokens', JSON.stringify(tokens));
 
@@ -57,6 +60,7 @@ router.get('/oauth2callback', async (req, res) => {
 // Lists calendar events
 router.get('/events', async (req, res) => {
     // Retrieve tokens from the database
+    const db = getDatabase();
     const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('google_calendar_tokens');
     if (!row) {
         return res.status(401).json({ error: 'Google Calendar not authenticated. Please authenticate first.' });
