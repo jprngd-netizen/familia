@@ -1,11 +1,12 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, 
   Globe, Mail, Clock, MapPin, Users, Info, 
   CheckCircle2, AlertCircle, ExternalLink, RefreshCw, X
 } from 'lucide-react';
 import { Child, CalendarEvent } from '../types';
+import apiService from '../services/apiService'; // Import the apiService
 
 interface CalendarViewProps {
   children: Child[];
@@ -16,30 +17,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showAddModal, setShowAddModal] = useState(false);
-  
-  // Estado para os eventos (inicializado com mocks)
-  const [events, setEvents] = useState<CalendarEvent[]>([
-    { 
-      id: 'e1', 
-      title: 'Apresentação de Piano', 
-      start: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 14, 0).toISOString(), 
-      end: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 16, 0).toISOString(), 
-      category: 'Extra', 
-      attendees: ['c2'], 
-      source: 'local' 
-    },
-    { 
-      id: 'e2', 
-      title: 'Vacina de Reforço', 
-      start: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 2, 9, 0).toISOString(), 
-      end: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 2, 10, 0).toISOString(), 
-      category: 'Médico', 
-      attendees: ['c1', 'c2'], 
-      source: 'google' 
-    }
-  ]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Novo evento form state
+  // New event form state
   const [newEvent, setNewEvent] = useState<Omit<CalendarEvent, 'id' | 'source'>>({
     title: '',
     start: new Date().toISOString(),
@@ -48,22 +30,32 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
     attendees: []
   });
 
-  const handleSync = (provider: 'google' | 'microsoft') => {
+  // Fetch events on component mount
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const fetchedEvents = await apiService.calendar.getEvents();
+      setEvents(fetchedEvents);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch events. Please try again.');
+    }
+    setIsLoading(false);
+  };
+
+  const handleAuthenticate = () => {
+    // Open the authentication URL in a new window
+    window.open('http://localhost:5001/api/calendar/auth', '_blank');
+  };
+  
+  const handleSync = async () => {
     setIsSyncing(true);
-    setTimeout(() => {
-      setIsSyncing(false);
-      // Simulação de importação
-      const imported: CalendarEvent = {
-        id: Math.random().toString(),
-        title: `Importado de ${provider}`,
-        start: new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 10, 0).toISOString(),
-        end: new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), 11, 0).toISOString(),
-        category: 'Extra',
-        attendees: [],
-        source: provider
-      };
-      setEvents(prev => [...prev, imported]);
-    }, 1500);
+    await fetchEvents();
+    setIsSyncing(false);
   };
 
   const getDaysInMonth = (date: Date) => {
@@ -87,8 +79,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
     });
   }, [events, selectedDate]);
 
-  const handleAddEvent = () => {
+  const handleAddEvent = async () => {
     if (!newEvent.title) return;
+    // Note: The backend doesn't support adding events yet.
+    // This will be a local add for now.
     const event: CalendarEvent = {
       ...newEvent,
       id: Math.random().toString(),
@@ -123,23 +117,29 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
         </div>
         <div className="flex gap-3">
           <button 
-            onClick={() => handleSync('google')}
-            disabled={isSyncing}
-            className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 py-2.5 rounded-2xl text-sm font-bold hover:shadow-lg transition-all active:scale-95 disabled:opacity-50"
+            onClick={handleAuthenticate}
+            className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 py-2.5 rounded-2xl text-sm font-bold hover:shadow-lg transition-all active:scale-95"
           >
             <Globe className="text-blue-500" size={18} />
-            <span>Google Calendar</span>
+            <span>Connect Google Calendar</span>
           </button>
           <button 
-            onClick={() => handleSync('microsoft')}
+            onClick={handleSync}
             disabled={isSyncing}
             className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 py-2.5 rounded-2xl text-sm font-bold hover:shadow-lg transition-all active:scale-95 disabled:opacity-50"
           >
-            <Mail className="text-sky-500" size={18} />
-            <span>Microsoft Outlook</span>
+            <RefreshCw className={`text-green-500 ${isSyncing ? 'animate-spin' : ''}`} size={18} />
+            <span>Sync Now</span>
           </button>
         </div>
       </header>
+
+      {error && (
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
+          <p className="font-bold">Error</p>
+          <p>{error}</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
@@ -151,7 +151,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
                 <h3 className="text-2xl font-black text-slate-800 dark:text-white capitalize">
                   {currentMonth.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}
                 </h3>
-                {isSyncing && <RefreshCw size={18} className="text-indigo-500 animate-spin" />}
+                {isLoading && <RefreshCw size={18} className="text-indigo-500 animate-spin" />}
               </div>
               <div className="flex gap-2">
                 <button 
@@ -297,7 +297,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
                   </div>
                 </div>
               ))}
-              {dayEvents.length === 0 && (
+              {dayEvents.length === 0 && !isLoading && (
                 <div className="py-20 text-center opacity-30 flex flex-col items-center justify-center h-full">
                   <CalendarIcon size={48} className="mb-4" />
                   <p className="font-bold">Nada planejado para hoje.</p>

@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -11,6 +12,7 @@ import devicesRoutes from './routes/devices.js';
 import settingsRoutes from './routes/settings.js';
 import logsRoutes from './routes/logs.js';
 import authRoutes from './routes/auth.js';
+import calendarRoutes from './routes/calendar.js'; // Import calendar routes
 import { errorHandler } from './middleware/errorHandler.js';
 import { requestLogger } from './middleware/requestLogger.js';
 
@@ -21,7 +23,7 @@ const __dirname = dirname(__filename);
 dotenv.config({ path: join(__dirname, '../.env') });
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors({
@@ -57,6 +59,7 @@ app.use('/api/rewards', rewardsRoutes);
 app.use('/api/devices', devicesRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/logs', logsRoutes);
+app.use('/api/calendar', calendarRoutes); // Add calendar routes
 
 // Error handling
 app.use(errorHandler);
