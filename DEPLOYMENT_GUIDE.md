@@ -4,12 +4,13 @@
 1. [Prerequisites](#prerequisites)
 2. [Server Setup](#server-setup)
 3. [Installation](#installation)
-4. [Firewall Integration Setup](#firewall-integration-setup)
-5. [Production Deployment](#production-deployment)
-6. [Systemd Services](#systemd-services)
-7. [Nginx Reverse Proxy](#nginx-reverse-proxy)
-8. [Security Hardening](#security-hardening)
-9. [Troubleshooting](#troubleshooting)
+4. [Google Calendar Setup](#google-calendar-setup-optional)
+5. [Firewall Integration Setup](#firewall-integration-setup)
+6. [Production Deployment](#production-deployment)
+7. [Systemd Services](#systemd-services)
+8. [Nginx Reverse Proxy](#nginx-reverse-proxy)
+9. [Security Hardening](#security-hardening)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -137,6 +138,66 @@ npm run init-db
 ```
 
 This will create the database and seed it with initial demo data.
+
+---
+
+## Google Calendar Setup (Optional)
+
+The Portal Família can display Google Calendar events on TV Mode, showing upcoming family appointments and activities.
+
+### Step 1: Create Google Cloud Project
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the **Google Calendar API**:
+   - Go to "APIs & Services" > "Library"
+   - Search for "Google Calendar API"
+   - Click "Enable"
+
+### Step 2: Create OAuth Credentials
+
+1. Go to "APIs & Services" > "Credentials"
+2. Click "Create Credentials" > "OAuth client ID"
+3. If prompted, configure the OAuth consent screen:
+   - User Type: External (or Internal for Workspace)
+   - App name: Portal Família
+   - Add your email as test user
+4. Select "Web application" as application type
+5. Add authorized redirect URI:
+   - For local: `http://localhost:5000/api/calendar/oauth2callback`
+   - For production: `https://your-domain.com/api/calendar/oauth2callback`
+6. Copy the Client ID and Client Secret
+
+### Step 3: Configure Environment
+
+Add to `backend/.env`:
+
+```env
+# Google Calendar Integration
+GOOGLE_CLIENT_ID=your-client-id-here.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret-here
+GOOGLE_REDIRECT_URI=http://localhost:5000/api/calendar/oauth2callback
+```
+
+For production with Nginx reverse proxy:
+```env
+GOOGLE_REDIRECT_URI=https://your-domain.com/api/calendar/oauth2callback
+```
+
+### Step 4: Connect Calendar
+
+1. Restart the backend server
+2. Log in as an admin (parent)
+3. Go to **Settings** > **Google Calendar**
+4. Click "Connect Google Calendar"
+5. Authorize access in the Google popup
+6. Calendar events will now appear in TV Mode
+
+### Troubleshooting Calendar
+
+- **"Not Configured" status**: Check that GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set in `.env`
+- **OAuth error**: Verify the redirect URI matches exactly what's configured in Google Cloud Console
+- **No events showing**: Ensure the connected Google account has calendar events
 
 ---
 

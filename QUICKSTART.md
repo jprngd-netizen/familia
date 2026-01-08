@@ -62,13 +62,31 @@ Open your browser and navigate to: **http://localhost:3000**
 
 ## Default Features Ready
 
-✅ **Task Management** - Create and assign tasks to children  
-✅ **Points System** - Children earn points for completing tasks  
-✅ **Reward Store** - Children can redeem rewards with points  
-✅ **Reward Approval** - Rewards >1000 points require parent approval  
-✅ **Activity Logs** - Track all family activities  
-✅ **Device Management** - Add and manage family devices  
+✅ **Task Management** - Create and assign tasks to children
+✅ **Points System** - Children earn points for completing tasks
+✅ **Reward Store** - Children can redeem rewards with points
+✅ **Reward Approval** - Rewards >1000 points require parent approval
+✅ **Activity Logs** - Track all family activities
+✅ **Device Management** - Add and manage family devices
 ✅ **Settings** - Configure theme, notifications, and system settings
+✅ **TV Mode** - Full-screen family display with leaderboard, calendar events, and birthday celebrations
+✅ **Streak Tracking** - Track consecutive days of task completion per child
+✅ **Task Auto-Reset** - Recurring tasks automatically reset daily/weekly
+✅ **Deadline Warnings** - Visual alerts when tasks are approaching their deadline
+✅ **Google Calendar** - Optional integration to display events on TV Mode
+
+## Google Calendar Integration (Optional)
+
+Display Google Calendar events on TV Mode:
+
+1. Create OAuth credentials at [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Add to `backend/.env`:
+   ```env
+   GOOGLE_CLIENT_ID=your-client-id
+   GOOGLE_CLIENT_SECRET=your-client-secret
+   GOOGLE_REDIRECT_URI=http://localhost:5000/api/calendar/oauth2callback
+   ```
+3. Restart backend, then go to **Settings > Google Calendar** to connect
 
 ## Firewall Integration (Optional)
 
@@ -99,6 +117,11 @@ To enable internet access control:
 - ✅ Task completion tracking
 - ✅ Device management
 - ✅ Activity logging
+- ✅ TV Mode with fullscreen kiosk display
+- ✅ Google Calendar integration
+- ✅ Streak tracking per child
+- ✅ Automatic task reset (daily/weekly)
+- ✅ Task deadline warnings
 
 ## Development Commands
 

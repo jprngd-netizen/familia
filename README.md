@@ -5,12 +5,17 @@ A comprehensive family portal application for managing chores, tasks, rewards, a
 ## Features
 
 - 🏠 **Family Dashboard**: Centralized view of all family members and their activities
-- ✅ **Task Management**: Create, assign, and track tasks for children
+- ✅ **Task Management**: Create, assign, and track tasks for children with scheduling and recurrence
 - 🎁 **Reward Store**: Parents can create rewards that children can redeem with earned points
 - 🔒 **Internet Access Control**: Integrated firewall control to block/unblock internet access based on task completion
 - 👨‍👩‍👧‍👦 **Multi-Child Support**: Manage multiple children with individual profiles and devices
 - 📊 **Activity Logs**: Track all family activities and task completions
 - 🎮 **Gamification**: Points-based system to motivate children
+- 📺 **TV Mode**: Full-screen kiosk display with leaderboard, countdown timers, and birthday celebrations
+- 🔥 **Streak Tracking**: Track consecutive days of task completion per child
+- 📅 **Google Calendar**: Optional integration to display family events on TV Mode
+- ⏰ **Deadline Warnings**: Visual alerts for tasks approaching their scheduled end time
+- 🔄 **Auto-Reset Tasks**: Recurring tasks automatically reset daily, weekly, or on specific days
 
 ## Technology Stack
 

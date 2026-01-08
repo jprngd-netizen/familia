@@ -264,11 +264,27 @@ LOCAL_SUBNET=192.168.1.0/24
 8. **Dashboard Views**
    - Parent dashboard (full control)
    - Kids portal (restricted view)
-   - Child detail view
+   - Child detail view with streak tracking
    - Store view
-   - Settings view
-   - Calendar view (placeholder)
-   - TV mode (placeholder)
+   - Settings view with Google Calendar connection
+   - Calendar view (functional)
+   - TV mode (fully implemented with kiosk mode, leaderboard, birthday celebrations, calendar events)
+
+9. **Streak Tracking**
+   - Track consecutive days of task completion
+   - Personal record tracking
+   - Visual display in child detail view
+
+10. **Task Auto-Reset**
+    - Daily tasks reset every day
+    - Weekly tasks reset after 7 days
+    - Weekday tasks reset Mon-Fri
+    - Weekend tasks reset Sat-Sun
+
+11. **Deadline Warnings**
+    - Visual alerts when tasks are approaching deadline
+    - Color-coded warnings (warning, urgent, overdue)
+    - Pulsing animation for overdue tasks
 
 ---
 
@@ -409,15 +425,18 @@ npm run dev
 
 ### Not Critical But Nice to Have
 
-1. **Calendar Integration**
-   - Google Calendar sync
-   - Microsoft Calendar sync
-   - Event management UI
+1. ~~**Calendar Integration**~~ ✅ **IMPLEMENTED**
+   - Google Calendar sync (OAuth flow)
+   - Events displayed on TV Mode
+   - Settings UI for connection management
 
-2. **TV Mode**
-   - Full-screen display mode
-   - Simplified interface
-   - Auto-refresh
+2. ~~**TV Mode**~~ ✅ **IMPLEMENTED**
+   - Full-screen kiosk mode
+   - Points leaderboard
+   - Birthday celebrations with confetti
+   - Countdown timers for tasks
+   - Google Calendar events display
+   - Screen saver mode
 
 3. **Notifications**
    - Email notifications
@@ -471,10 +490,10 @@ npm run dev
 - **Deleted Files:** 1 (geminiService.ts)
 
 ### Features
-- **Fully Implemented:** 8 major features
-- **Partially Implemented:** 2 (Calendar, TV Mode - placeholders)
+- **Fully Implemented:** 11 major features
+- **Partially Implemented:** 0
 - **Bug Fixes:** 15+
-- **API Endpoints:** 30+
+- **API Endpoints:** 35+
 
 ### Documentation
 - **Pages Created:** 30+ (across all docs)
@@ -522,4 +541,4 @@ For questions or issues:
 
 **Project Status: ✅ COMPLETE AND READY FOR DEPLOYMENT**
 
-Last Updated: January 6, 2026
+Last Updated: January 8, 2026
