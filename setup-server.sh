@@ -33,24 +33,126 @@ else
     echo "Node.js already installed: $(node --version)"
 fi
 
-# 2. Install dependencies
+# 2. Install backend dependencies
 echo ""
-echo "=== Installing dependencies ==="
+echo "=== Installing backend dependencies ==="
 cd "$SCRIPT_DIR/backend"
 npm install --production
 
-# 3. Setup environment file if not exists
+# 3. Build frontend
+echo ""
+echo "=== Building frontend ==="
+cd "$SCRIPT_DIR/frontend"
+npm install
+npm run build
+
+# 4. Setup environment file if not exists
 if [ ! -f "$SCRIPT_DIR/backend/.env" ]; then
     echo ""
     echo "=== Creating .env file ==="
-    cp "$SCRIPT_DIR/backend/.env.example" "$SCRIPT_DIR/backend/.env" 2>/dev/null || {
-        echo "PORT=3001" > "$SCRIPT_DIR/backend/.env"
-        echo "NODE_ENV=production" >> "$SCRIPT_DIR/backend/.env"
-    }
-    echo "Created .env file - edit it later if needed: $SCRIPT_DIR/backend/.env"
+    cat > "$SCRIPT_DIR/backend/.env" <<ENVEOF
+PORT=3001
+NODE_ENV=production
+ENABLE_FIREWALL=false
+ENVEOF
+    echo "Created .env file at: $SCRIPT_DIR/backend/.env"
 fi
 
-# 4. Create systemd service
+# 5. Setup firewall for device blocking (optional)
+echo ""
+read -p "Enable internet blocking for devices? (requires iptables) (y/n): " setup_firewall
+if [ "$setup_firewall" = "y" ]; then
+    echo ""
+    echo "=== Setting up firewall ==="
+
+    # Install iptables-persistent to save rules across reboots
+    sudo apt-get install -y iptables-persistent
+
+    # Allow the app user to run iptables without password
+    echo ""
+    echo "Setting up passwordless iptables for $CURRENT_USER..."
+    sudo tee /etc/sudoers.d/familia-iptables > /dev/null <<SUDOEOF
+# Allow familia app to manage iptables for device blocking
+$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/sbin/iptables
+SUDOEOF
+    sudo chmod 440 /etc/sudoers.d/familia-iptables
+
+    # Enable firewall in .env
+    sed -i 's/ENABLE_FIREWALL=false/ENABLE_FIREWALL=true/' "$SCRIPT_DIR/backend/.env"
+
+    echo "Firewall setup complete!"
+    echo "Note: Blocked devices will persist across reboots"
+fi
+
+# 6. Configure UFW (Ubuntu Firewall)
+echo ""
+read -p "Configure UFW to allow app access from local network? (y/n): " setup_ufw
+if [ "$setup_ufw" = "y" ]; then
+    echo ""
+    echo "=== Configuring UFW ==="
+    sudo apt-get install -y ufw
+
+    # Allow SSH (important - don't lock yourself out!)
+    sudo ufw allow ssh
+
+    # Allow the app port from local network
+    sudo ufw allow from 192.168.0.0/16 to any port 3001
+
+    # Allow HTTP/HTTPS if needed
+    sudo ufw allow from 192.168.0.0/16 to any port 80
+    sudo ufw allow from 192.168.0.0/16 to any port 443
+
+    # Enable UFW
+    sudo ufw --force enable
+
+    echo "UFW configured and enabled"
+fi
+
+# 7. Setup static IP (optional)
+echo ""
+read -p "Setup static IP address? (recommended for servers) (y/n): " setup_static_ip
+if [ "$setup_static_ip" = "y" ]; then
+    echo ""
+    echo "=== Setting up static IP ==="
+
+    # Get current network info
+    CURRENT_IP=$(hostname -I | awk '{print $1}')
+    GATEWAY=$(ip route | grep default | awk '{print $3}')
+    INTERFACE=$(ip route | grep default | awk '{print $5}')
+
+    echo "Current IP: $CURRENT_IP"
+    echo "Gateway: $GATEWAY"
+    echo "Interface: $INTERFACE"
+    echo ""
+    read -p "Use $CURRENT_IP as static IP? (y/n): " use_current
+
+    if [ "$use_current" = "y" ]; then
+        STATIC_IP=$CURRENT_IP
+    else
+        read -p "Enter desired static IP (e.g., 192.168.1.100): " STATIC_IP
+    fi
+
+    # Create netplan config
+    sudo tee /etc/netplan/99-static-ip.yaml > /dev/null <<NETPLANEOF
+network:
+  version: 2
+  ethernets:
+    $INTERFACE:
+      dhcp4: no
+      addresses:
+        - $STATIC_IP/24
+      routes:
+        - to: default
+          via: $GATEWAY
+      nameservers:
+        addresses: [8.8.8.8, 8.8.4.4, 1.1.1.1]
+NETPLANEOF
+
+    echo "Static IP configured: $STATIC_IP"
+    echo "Will take effect after reboot or 'sudo netplan apply'"
+fi
+
+# 8. Create systemd service
 echo ""
 echo "=== Creating systemd service ==="
 sudo tee /etc/systemd/system/familia.service > /dev/null <<EOF
@@ -71,14 +173,14 @@ Environment=NODE_ENV=production
 WantedBy=multi-user.target
 EOF
 
-# 5. Enable and start service
+# 9. Enable and start service
 echo ""
 echo "=== Enabling service ==="
 sudo systemctl daemon-reload
 sudo systemctl enable familia
 sudo systemctl start familia
 
-# 6. Setup auto-reboot (optional)
+# 10. Setup auto-reboot (optional)
 echo ""
 read -p "Setup weekly auto-reboot on Sunday 4AM? (y/n): " setup_reboot
 if [ "$setup_reboot" = "y" ]; then
@@ -86,26 +188,44 @@ if [ "$setup_reboot" = "y" ]; then
     echo "Weekly reboot scheduled"
 fi
 
-# 7. Setup SSH (if not already)
+# 11. Setup SSH (if not already)
 echo ""
 echo "=== Ensuring SSH is enabled ==="
 sudo apt-get install -y openssh-server
 sudo systemctl enable ssh
 sudo systemctl start ssh
 
-# 8. Show status
+# 12. Show status and summary
 echo ""
+echo "========================================"
 echo "=== Setup Complete! ==="
+echo "========================================"
 echo ""
 echo "Service status:"
-sudo systemctl status familia --no-pager
+sudo systemctl status familia --no-pager || true
 echo ""
-echo "Your server IP:"
-hostname -I
+SERVER_IP=$(hostname -I | awk '{print $1}')
+echo "========================================"
+echo "Your server is ready!"
+echo "========================================"
+echo ""
+echo "Access the app at: http://$SERVER_IP:3001"
+echo ""
+echo "Connect via SSH: ssh $CURRENT_USER@$SERVER_IP"
 echo ""
 echo "Useful commands:"
-echo "  sudo systemctl status familia  - Check status"
-echo "  sudo systemctl restart familia - Restart app"
-echo "  sudo journalctl -u familia -f  - View logs"
+echo "  sudo systemctl status familia   - Check app status"
+echo "  sudo systemctl restart familia  - Restart app"
+echo "  sudo journalctl -u familia -f   - View live logs"
+echo "  sudo iptables -L -n             - View firewall rules"
 echo ""
-echo "Connect remotely with: ssh $CURRENT_USER@$(hostname -I | awk '{print $1}')"
+if [ "$setup_firewall" = "y" ]; then
+    echo "Internet blocking: ENABLED"
+    echo "  - Kids' devices will be blocked until tasks are complete"
+    echo "  - Rules persist across reboots"
+else
+    echo "Internet blocking: DISABLED"
+    echo "  - Enable later by setting ENABLE_FIREWALL=true in backend/.env"
+fi
+echo ""
+echo "========================================"
