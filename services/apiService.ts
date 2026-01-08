@@ -2,7 +2,25 @@
 // API Service for Portal Família
 // This service handles all communication with the backend API
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+// Detect GitHub Codespaces and construct the correct API URL
+function getApiBaseUrl(): string {
+  // Check for explicit environment variable first
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // Auto-detect GitHub Codespaces
+  const hostname = window.location.hostname;
+  if (hostname.includes('.app.github.dev')) {
+    // In Codespaces: replace port 3000 with 5000 in the URL
+    return `https://${hostname.replace('-3000.', '-5000.')}/api`;
+  }
+
+  // Default for local development
+  return 'http://localhost:5000/api';
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Helper function to handle API responses
 async function handleResponse<T>(response: Response): Promise<T> {
