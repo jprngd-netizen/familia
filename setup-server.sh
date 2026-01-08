@@ -78,10 +78,16 @@ echo "=== Installing backend dependencies ==="
 cd "$SCRIPT_DIR/backend"
 npm install --production
 
-# 3. Build frontend
+# 3. Build frontend (frontend is in root directory)
 echo ""
 echo "=== Building frontend ==="
-cd "$SCRIPT_DIR/frontend"
+cd "$SCRIPT_DIR"
+
+# Create .env.local for frontend build (API on same server)
+cat > "$SCRIPT_DIR/.env.local" <<ENVEOF
+VITE_API_URL=/api
+ENVEOF
+
 npm install
 npm run build
 

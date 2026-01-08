@@ -2,6 +2,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { initDatabase, resetDailyTasks, syncAllBlockStatus } from './models/database.js';
@@ -80,13 +81,24 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/api/calendar', calendarRoutes); // Add calendar routes
 
-// Error handling
-app.use(errorHandler);
+// Error handling for API routes
+app.use('/api', errorHandler);
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint not found' });
-});
+// Serve static frontend files in production
+const distPath = join(__dirname, '../../dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  // SPA fallback - serve index.html for all non-API routes
+  app.get('*', (req, res) => {
+    res.sendFile(join(distPath, 'index.html'));
+  });
+  console.log(`📂 Serving static files from: ${distPath}`);
+} else {
+  // 404 handler when no frontend built
+  app.use((req, res) => {
+    res.status(404).json({ error: 'Endpoint not found. Frontend not built - run npm run build in root.' });
+  });
+}
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
