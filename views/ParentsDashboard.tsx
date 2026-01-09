@@ -24,21 +24,21 @@ const ParentsDashboard: React.FC<ParentsDashboardProps> = ({
   children, logs, rewardRequests, onProcessRequest, onAdjustPoints, onChildClick, onQuickUnlock, onToggleTV
 }) => {
   return (
-    <div className="p-8 pb-24 space-y-8 animate-in fade-in duration-500">
-      <header className="flex justify-between items-center">
+    <div className="p-4 sm:p-6 lg:p-8 pb-24 space-y-6 lg:space-y-8 animate-in fade-in duration-500">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-black text-slate-800 dark:text-white">Dashboard Parental</h2>
-          <p className="text-slate-500 font-medium">Gestão inteligente e gamificada da família.</p>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white">Dashboard Parental</h2>
+          <p className="text-sm sm:text-base text-slate-500 font-medium">Gestão inteligente e gamificada da família.</p>
         </div>
       </header>
 
       {/* Central de Aprovação */}
       {rewardRequests.length > 0 && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-[2.5rem] p-8 animate-in zoom-in duration-300">
-           <h3 className="text-xl font-black text-amber-800 dark:text-amber-400 mb-6 flex items-center gap-3">
-              <Clock size={24} /> Central de Aprovação ({rewardRequests.length})
+        <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 lg:p-8 animate-in zoom-in duration-300">
+           <h3 className="text-lg sm:text-xl font-black text-amber-800 dark:text-amber-400 mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+              <Clock size={20} className="sm:w-6 sm:h-6" /> Central de Aprovação ({rewardRequests.length})
            </h3>
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
               {rewardRequests.map(req => (
                 <div key={req.id} className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-amber-100 dark:border-amber-900 flex flex-col justify-between">
                    <div className="mb-4">
@@ -72,12 +72,12 @@ const ParentsDashboard: React.FC<ParentsDashboardProps> = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
+        <div className="xl:col-span-2 space-y-6 lg:space-y-8">
           {/* Card de Membros */}
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800">
-             <h3 className="text-xl font-bold dark:text-white mb-6">Status da Família</h3>
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800">
+             <h3 className="text-lg sm:text-xl font-bold dark:text-white mb-4 sm:mb-6">Status da Família</h3>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {children.map(child => (
                    <div key={child.id} className="p-4 rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between group">
                       <button onClick={() => onChildClick(child.id)} className="flex items-center gap-3 text-left">
@@ -97,8 +97,8 @@ const ParentsDashboard: React.FC<ParentsDashboardProps> = ({
           </div>
 
           {/* Logs Rápidos */}
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800">
-             <h3 className="text-xl font-bold dark:text-white mb-6">Atividade Recente</h3>
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800">
+             <h3 className="text-lg sm:text-xl font-bold dark:text-white mb-4 sm:mb-6">Atividade Recente</h3>
              <div className="space-y-4">
                 {logs.slice(0, 5).map(log => (
                    <div key={log.id} className="flex gap-4 items-start">
@@ -113,12 +113,12 @@ const ParentsDashboard: React.FC<ParentsDashboardProps> = ({
           </div>
         </div>
 
-        <div className="space-y-8">
-           <div className="bg-indigo-900 p-8 rounded-[3rem] text-white shadow-xl flex flex-col items-center text-center">
-              <Activity size={48} className="text-indigo-300 mb-6" />
-              <h4 className="text-2xl font-black mb-2">Engajamento Semanal</h4>
-              <p className="text-indigo-200 text-sm mb-6 leading-relaxed">As crianças estão completando 85% das missões dentro do prazo esperado.</p>
-              <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden mb-2">
+        <div className="space-y-6 lg:space-y-8">
+           <div className="bg-indigo-900 p-6 sm:p-8 rounded-2xl sm:rounded-[3rem] text-white shadow-xl flex flex-col items-center text-center">
+              <Activity size={40} className="sm:w-12 sm:h-12 text-indigo-300 mb-4 sm:mb-6" />
+              <h4 className="text-xl sm:text-2xl font-black mb-2">Engajamento Semanal</h4>
+              <p className="text-indigo-200 text-xs sm:text-sm mb-4 sm:mb-6 leading-relaxed">As crianças estão completando 85% das missões dentro do prazo esperado.</p>
+              <div className="w-full h-2 sm:h-3 bg-white/10 rounded-full overflow-hidden mb-2">
                  <div className="h-full bg-indigo-400" style={{width: '85%'}} />
               </div>
               <span className="text-[10px] font-black uppercase tracking-widest text-indigo-300">Meta: 90%</span>

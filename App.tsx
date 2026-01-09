@@ -33,6 +33,7 @@ const App: React.FC = () => {
   const [upcomingBirthdays, setUpcomingBirthdays] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Fetch data function (reusable)
   const fetchData = async () => {
@@ -487,16 +488,18 @@ const App: React.FC = () => {
   return (
     <div className={`flex min-h-screen ${systemSettings.theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} transition-colors duration-300`}>
       {activeView !== 'login' && (
-        <Sidebar 
-          activeView={activeView} 
-          onViewChange={setActiveView} 
-          onLogout={handleLogout} 
-          currentUser={authenticatedMember} 
-          isReadOnly={isReadOnly} 
+        <Sidebar
+          activeView={activeView}
+          onViewChange={setActiveView}
+          onLogout={handleLogout}
+          currentUser={authenticatedMember}
+          isReadOnly={isReadOnly}
           upcomingBirthdays={upcomingBirthdays}
+          isOpen={sidebarOpen}
+          onToggle={() => setSidebarOpen(!sidebarOpen)}
         />
       )}
-      <main className={`flex-1 ${activeView !== 'login' ? 'ml-64' : ''} min-h-screen`}>
+      <main className={`flex-1 ${activeView !== 'login' ? 'lg:ml-64' : ''} min-h-screen pt-16 lg:pt-0`}>
         {renderContent()}
       </main>
     </div>
