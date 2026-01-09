@@ -4,7 +4,7 @@ import {
   Users, Monitor, Settings, Plus, Edit2, Trash2, Moon, Sun, X,
   RefreshCw, Key, ShieldCheck, Send, Bell, Bot, Lock, Check,
   AlertCircle, MessageSquare, Smartphone, Zap, Calendar, ExternalLink,
-  CheckCircle2, XCircle, Loader2, Shield, Globe
+  CheckCircle2, XCircle, Loader2, Shield, Globe, Cake
 } from 'lucide-react';
 import { Child, MemberRole, Device, DeviceType, SystemSettings, WhitelistDomain } from '../types';
 import { calendarAPI, settingsAPI, devicesAPI } from '../services/apiService';
@@ -709,6 +709,16 @@ GOOGLE_REDIRECT_URI=http://localhost:5000/api/calendar/oauth2callback`}
                   <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest flex items-center gap-2"><Key size={12}/> PIN (4 dígitos)</label>
                   <input type="text" maxLength={4} value={memberPin} onChange={e => setMemberPin(e.target.value.replace(/\D/g,''))} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl px-6 py-4 font-bold outline-none focus:border-indigo-500 text-center tracking-[0.5em]" placeholder="0000" />
                 </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest flex items-center gap-2"><Cake size={12}/> Data de Nascimento</label>
+                <input
+                  type="date"
+                  value={memberBirthday}
+                  onChange={e => setMemberBirthday(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl px-6 py-4 font-bold outline-none focus:border-indigo-500"
+                />
+                <p className="text-[10px] text-slate-400 mt-2">O aniversário aparecerá automaticamente no calendário e no Modo TV.</p>
               </div>
             </div>
             <div className="flex flex-col gap-3">

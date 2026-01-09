@@ -17,9 +17,9 @@ export interface CalendarEvent {
   title: string;
   start: string; // ISO String
   end: string;
-  category: 'Escola' | 'Lazer' | 'Médico' | 'Extra';
+  category: 'Escola' | 'Lazer' | 'Médico' | 'Extra' | 'Aniversário';
   attendees: string[]; // IDs das crianças
-  source: 'local' | 'google' | 'microsoft';
+  source: 'local' | 'google' | 'microsoft' | 'birthday';
 }
 
 export interface Reward {

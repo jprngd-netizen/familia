@@ -1,9 +1,9 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { 
-  Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, 
-  Globe, Mail, Clock, MapPin, Users, Info, 
-  CheckCircle2, AlertCircle, ExternalLink, RefreshCw, X
+import {
+  Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus,
+  Globe, Mail, Clock, MapPin, Users, Info,
+  CheckCircle2, AlertCircle, ExternalLink, RefreshCw, X, Cake
 } from 'lucide-react';
 import { Child, CalendarEvent } from '../types';
 import apiService from '../services/apiService'; // Import the apiService
@@ -67,9 +67,34 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
   const startDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
   const totalDays = getDaysInMonth(currentMonth);
 
+  // Generate birthday events from children
+  const birthdayEvents = useMemo((): CalendarEvent[] => {
+    const currentYear = currentMonth.getFullYear();
+    return children
+      .filter(child => child.birthday)
+      .map(child => {
+        const bday = new Date(child.birthday);
+        const birthdayThisYear = new Date(currentYear, bday.getMonth(), bday.getDate());
+        return {
+          id: `birthday-${child.id}-${currentYear}`,
+          title: `🎂 Aniversário: ${child.name}`,
+          start: birthdayThisYear.toISOString(),
+          end: birthdayThisYear.toISOString(),
+          category: 'Aniversário' as const,
+          attendees: [child.id],
+          source: 'birthday' as const
+        };
+      });
+  }, [children, currentMonth]);
+
+  // Combine regular events with birthday events
+  const allEvents = useMemo(() => {
+    return [...events, ...birthdayEvents];
+  }, [events, birthdayEvents]);
+
   // Filtra eventos para o dia selecionado
   const dayEvents = useMemo(() => {
-    return events.filter(event => {
+    return allEvents.filter(event => {
       const eventDate = new Date(event.start);
       return (
         eventDate.getDate() === selectedDate.getDate() &&
@@ -77,7 +102,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
         eventDate.getFullYear() === selectedDate.getFullYear()
       );
     });
-  }, [events, selectedDate]);
+  }, [allEvents, selectedDate]);
 
   const handleAddEvent = async () => {
     if (!newEvent.title) return;
@@ -185,7 +210,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
                 const isSelected = selectedDate.getDate() === day && selectedDate.getMonth() === currentMonth.getMonth() && selectedDate.getFullYear() === currentMonth.getFullYear();
                 const isToday = new Date().getDate() === day && new Date().getMonth() === currentMonth.getMonth() && new Date().getFullYear() === currentMonth.getFullYear();
                 
-                const hasEvents = events.some(e => {
+                const hasEvents = allEvents.some(e => {
                   const d = new Date(e.start);
                   return d.getDate() === day && d.getMonth() === currentMonth.getMonth() && d.getFullYear() === currentMonth.getFullYear();
                 });
@@ -257,21 +282,28 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
               {dayEvents.map(event => (
                 <div key={event.id} className="group relative animate-in slide-in-from-right-4">
                   <div className={`p-6 rounded-[2rem] border-l-8 transition-all hover:shadow-md ${
-                    event.category === 'Escola' ? 'border-amber-400 bg-amber-50/20' : 
-                    event.category === 'Médico' ? 'border-rose-400 bg-rose-50/20' : 
+                    event.category === 'Aniversário' ? 'border-pink-400 bg-pink-50/20 dark:bg-pink-900/20' :
+                    event.category === 'Escola' ? 'border-amber-400 bg-amber-50/20' :
+                    event.category === 'Médico' ? 'border-rose-400 bg-rose-50/20' :
                     'border-indigo-400 bg-indigo-50/20'
                   }`}>
                     <div className="flex justify-between items-start mb-3">
-                      <span className="text-[10px] font-black uppercase tracking-widest opacity-60">{event.category}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-60 flex items-center gap-1">
+                        {event.category === 'Aniversário' && <Cake size={12} />}
+                        {event.category}
+                      </span>
                       <div className="flex items-center gap-2">
                         {event.source === 'google' && <Globe size={12} className="text-blue-500" />}
                         {event.source === 'microsoft' && <Mail size={12} className="text-sky-500" />}
-                        <button 
-                          onClick={() => setEvents(prev => prev.filter(e => e.id !== event.id))}
-                          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition"
-                        >
-                          <X size={14} />
-                        </button>
+                        {event.source === 'birthday' && <Cake size={12} className="text-pink-500" />}
+                        {event.source !== 'birthday' && (
+                          <button
+                            onClick={() => setEvents(prev => prev.filter(e => e.id !== event.id))}
+                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition"
+                          >
+                            <X size={14} />
+                          </button>
+                        )}
                       </div>
                     </div>
                     <h4 className="font-bold text-slate-800 dark:text-white mb-4">{event.title}</h4>
