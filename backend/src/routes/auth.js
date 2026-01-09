@@ -36,11 +36,12 @@ router.post('/setup', (req, res) => {
 
     const id = uuidv4();
     const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
+    const birthday = '1990-01-01'; // Default birthday for admin (can be updated later)
 
     db.prepare(`
-      INSERT INTO children (id, name, avatar, role, pin, points, has_tv_access, unlocked_hours)
-      VALUES (?, ?, ?, 'Adulto', ?, 0, 1, 24)
-    `).run(id, name, avatar, pin);
+      INSERT INTO children (id, name, avatar, role, pin, points, has_tv_access, unlocked_hours, birthday)
+      VALUES (?, ?, ?, 'Adulto', ?, 0, 1, 24, ?)
+    `).run(id, name, avatar, pin, birthday);
 
     const member = db.prepare('SELECT id, name, avatar, role, points FROM children WHERE id = ?').get(id);
 
