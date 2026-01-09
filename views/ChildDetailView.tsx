@@ -16,7 +16,7 @@ interface ChildDetailViewProps {
   onUnlock: (childId: string) => void;
   onAddTask?: (childId: string, task: Omit<Task, 'id' | 'completed'>) => void;
   onUpdateTask?: (childId: string, taskId: string, updates: Partial<Task>) => void;
-  // Fix: Added missing onDeleteChild property to the interface as it is being passed from App.tsx
+  onDeleteTask?: (childId: string, taskId: string) => void;
   onDeleteChild?: (childId: string) => void;
 }
 
@@ -43,7 +43,7 @@ const getDeadlineStatus = (task: Task): { status: 'ok' | 'warning' | 'urgent' | 
 };
 
 const ChildDetailView: React.FC<ChildDetailViewProps> = ({
-  child, onBack, onAdjustPoints, onToggleTask, onUnlock, onAddTask, onUpdateTask, onDeleteChild
+  child, onBack, onAdjustPoints, onToggleTask, onUnlock, onAddTask, onUpdateTask, onDeleteTask, onDeleteChild
 }) => {
   const [newTask, setNewTask] = useState<{
     title: string;
@@ -343,7 +343,12 @@ const ChildDetailView: React.FC<ChildDetailViewProps> = ({
                           </button>
                         </div>
                       )}
-                      <button className="text-slate-200 hover:text-rose-500 transition p-1"><Trash2 size={18} /></button>
+                      <button
+                            onClick={() => onDeleteTask && onDeleteTask(child.id, task.id)}
+                            className="text-slate-200 hover:text-rose-500 transition p-1"
+                          >
+                            <Trash2 size={18} />
+                          </button>
                     </div>
                   </div>
                 ))}

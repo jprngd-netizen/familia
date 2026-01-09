@@ -174,11 +174,35 @@ const App: React.FC = () => {
         recurrence: task.recurrence,
         schedule: task.schedule
       });
-      
+
       const updatedChildren = await API.children.getAll();
       setChildren(updatedChildren);
     } catch (err: any) {
       alert(`Erro ao criar tarefa: ${err.message}`);
+    }
+  };
+
+  const handleUpdateTask = async (childId: string, taskId: string, updates: Partial<Task>) => {
+    try {
+      await API.tasks.update(taskId, updates);
+
+      const updatedChildren = await API.children.getAll();
+      setChildren(updatedChildren);
+    } catch (err: any) {
+      alert(`Erro ao atualizar tarefa: ${err.message}`);
+    }
+  };
+
+  const handleDeleteTask = async (childId: string, taskId: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta tarefa?')) return;
+
+    try {
+      await API.tasks.delete(taskId);
+
+      const updatedChildren = await API.children.getAll();
+      setChildren(updatedChildren);
+    } catch (err: any) {
+      alert(`Erro ao excluir tarefa: ${err.message}`);
     }
   };
 
@@ -446,7 +470,8 @@ const App: React.FC = () => {
             onToggleTask={handleToggleTask}
             onUnlock={handleQuickUnlock}
             onAddTask={handleAddTask}
-            onUpdateTask={() => {}}
+            onUpdateTask={handleUpdateTask}
+            onDeleteTask={handleDeleteTask}
             onDeleteChild={handleDeleteChild}
           />
         ) : null;
