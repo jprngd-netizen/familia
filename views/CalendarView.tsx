@@ -48,8 +48,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
   };
 
   const handleAuthenticate = () => {
-    // Open the authentication URL in a new window
-    window.open('http://localhost:5001/api/calendar/auth', '_blank');
+    // Open the authentication URL - uses same origin as the app
+    window.open('/api/calendar/auth', '_blank');
   };
   
   const handleSync = async () => {
