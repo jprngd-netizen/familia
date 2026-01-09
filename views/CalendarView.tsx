@@ -73,8 +73,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
     return children
       .filter(child => child.birthday)
       .map(child => {
-        const bday = new Date(child.birthday);
-        const birthdayThisYear = new Date(currentYear, bday.getMonth(), bday.getDate());
+        // Parse birthday string (YYYY-MM-DD) to avoid timezone issues
+        const [year, month, day] = child.birthday.split('-').map(Number);
+        const birthdayThisYear = new Date(currentYear, month - 1, day, 12, 0, 0); // noon to avoid timezone shifts
         return {
           id: `birthday-${child.id}-${currentYear}`,
           title: `🎂 Aniversário: ${child.name}`,
