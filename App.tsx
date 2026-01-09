@@ -439,17 +439,21 @@ const App: React.FC = () => {
       case 'child-detail':
         const child = children.find(c => c.id === selectedChildId);
         return child ? (
-          <ChildDetailView 
-            child={child} 
-            onBack={() => setActiveView('parent-dashboard')} 
-            onAdjustPoints={handleAdjustPoints} 
-            onToggleTask={handleToggleTask} 
-            onUnlock={handleQuickUnlock} 
-            onAddTask={handleAddTask} 
-            onUpdateTask={() => {}} 
-            onDeleteChild={handleDeleteChild} 
+          <ChildDetailView
+            child={child}
+            onBack={() => setActiveView('parent-dashboard')}
+            onAdjustPoints={handleAdjustPoints}
+            onToggleTask={handleToggleTask}
+            onUnlock={handleQuickUnlock}
+            onAddTask={handleAddTask}
+            onUpdateTask={() => {}}
+            onDeleteChild={handleDeleteChild}
           />
         ) : null;
+      case 'tv-mode':
+        return <TVMode children={children} />;
+      case 'calendar':
+        return <CalendarView children={children} />;
       default:
         return <div className="p-10">Página em construção...</div>;
     }
