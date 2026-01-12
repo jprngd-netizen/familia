@@ -1,16 +1,16 @@
+// Application version - update this when releasing new versions
+export const APP_VERSION = '1.1.0';
+
+// Changelog content for display in the app
+export const CHANGELOG = `
 # Changelog
-
-Todas as alterações notáveis neste projeto serão documentadas neste arquivo.
-
-O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
-e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [1.1.0] - 2026-01-12
 
 ### Adicionado
-- Exibição da versão do app no rodapé da sidebar
-- Visualizador de changelog integrado ao app (clique na versão)
-- Arquivo `version.ts` centralizado para controle de versão
+- Exibição da versão no rodapé do aplicativo
+- Visualizador de changelog integrado ao app
+- Sistema de versionamento semântico
 
 ## [1.0.0] - 2026-01-12
 
@@ -69,19 +69,4 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Tema Claro/Escuro**
   - Alternância entre modo dia e noite
   - Persistência de preferência
-
-### Técnico
-- Frontend em React 19 com TypeScript
-- Estilização com Tailwind CSS
-- Backend em Node.js com Express
-- Banco de dados SQLite
-- Build com Vite
-- Testes com Vitest
-
----
-
-## Convenções de Versionamento
-
-- **MAJOR (X.0.0)**: Mudanças incompatíveis com versões anteriores
-- **MINOR (0.X.0)**: Novas funcionalidades compatíveis
-- **PATCH (0.0.X)**: Correções de bugs compatíveis
+`;

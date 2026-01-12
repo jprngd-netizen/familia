@@ -1,7 +1,8 @@
 
-import React from 'react';
-import { Home, Users, Tv, Settings, ShieldAlert, Calendar, LayoutDashboard, ShoppingBag, LogOut, Lock, Cake, PartyPopper, Menu, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Home, Users, Tv, Settings, ShieldAlert, Calendar, LayoutDashboard, ShoppingBag, LogOut, Lock, Cake, PartyPopper, Menu, X, Info, FileText } from 'lucide-react';
 import { Child } from '../types';
+import { APP_VERSION, CHANGELOG } from '../version';
 
 interface SidebarProps {
   activeView: string;
@@ -15,6 +16,8 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, onLogout, currentUser, isReadOnly, upcomingBirthdays = [], isOpen, onToggle }) => {
+  const [showChangelog, setShowChangelog] = useState(false);
+
   const menuItems = [
     { id: 'parent-dashboard', label: 'Dashboard Pais', icon: LayoutDashboard, adminOnly: true },
     { id: 'kids-portal', label: 'Minhas Missões', icon: Users, adminOnly: false },
@@ -152,8 +155,78 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, onLogout, c
             <LogOut size={18} />
             <span>{isReadOnly ? 'Voltar ao Início' : 'Sair do Perfil'}</span>
           </button>
+
+          {/* Version Footer */}
+          <div className="pt-3 border-t border-indigo-800/50 mt-3">
+            <button
+              onClick={() => setShowChangelog(true)}
+              className="w-full flex items-center justify-center gap-2 text-indigo-400 hover:text-indigo-200 transition text-xs py-2"
+            >
+              <Info size={12} />
+              <span className="font-medium">Portal Família v{APP_VERSION}</span>
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Changelog Modal */}
+      {showChangelog && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4" onClick={() => setShowChangelog(false)}>
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+                  <FileText size={20} className="text-indigo-600" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-slate-900 dark:text-white">Changelog</h2>
+                  <p className="text-xs text-slate-500">Versão atual: {APP_VERSION}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowChangelog(false)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"
+              >
+                <X size={20} className="text-slate-500" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[60vh] prose prose-sm dark:prose-invert prose-indigo">
+              <div className="text-slate-700 dark:text-slate-300 text-sm space-y-4 whitespace-pre-wrap font-mono">
+                {CHANGELOG.split('\n').map((line, i) => {
+                  if (line.startsWith('# ')) {
+                    return <h1 key={i} className="text-2xl font-black text-slate-900 dark:text-white mt-0">{line.replace('# ', '')}</h1>;
+                  }
+                  if (line.startsWith('## ')) {
+                    return <h2 key={i} className="text-lg font-bold text-indigo-600 dark:text-indigo-400 mt-6 mb-2 border-b border-slate-200 dark:border-slate-700 pb-2">{line.replace('## ', '')}</h2>;
+                  }
+                  if (line.startsWith('### ')) {
+                    return <h3 key={i} className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-4 mb-1">{line.replace('### ', '')}</h3>;
+                  }
+                  if (line.startsWith('- **')) {
+                    const match = line.match(/- \*\*(.+?)\*\*(.*)/);
+                    if (match) {
+                      return <p key={i} className="ml-2 my-1"><span className="font-bold text-slate-900 dark:text-white">{match[1]}</span>{match[2]}</p>;
+                    }
+                  }
+                  if (line.startsWith('  - ')) {
+                    return <p key={i} className="ml-6 text-slate-600 dark:text-slate-400 my-0.5 text-xs">{line.replace('  - ', '• ')}</p>;
+                  }
+                  if (line.startsWith('- ')) {
+                    return <p key={i} className="ml-2 text-slate-600 dark:text-slate-400 my-0.5">{line.replace('- ', '• ')}</p>;
+                  }
+                  if (line.trim()) {
+                    return <p key={i} className="text-slate-600 dark:text-slate-400 my-1">{line}</p>;
+                  }
+                  return null;
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
