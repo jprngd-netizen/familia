@@ -92,6 +92,7 @@ export interface Child {
   punishments: Punishment[];
   currentStreak?: number;
   longestStreak?: number;
+  themePreference?: 'light' | 'dark' | 'system';
 }
 
 export interface Punishment {

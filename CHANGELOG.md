@@ -5,6 +5,18 @@ Todas as alterações notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.2.0] - 2026-01-12
+
+### Adicionado
+- Preferência de tema por usuário (claro/escuro/sistema)
+- Seletor de tema na barra lateral com 3 opções (Sol, Lua, Monitor)
+- Sincronização automática com tema do sistema operacional
+- Persistência da preferência de tema no banco de dados
+
+### Alterado
+- Tema agora é individual para cada membro da família
+- Cada usuário pode escolher seu próprio tema ao fazer login
+
 ## [1.1.0] - 2026-01-12
 
 ### Adicionado

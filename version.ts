@@ -1,9 +1,21 @@
 // Application version - update this when releasing new versions
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.2.0';
 
 // Changelog content for display in the app
 export const CHANGELOG = `
 # Changelog
+
+## [1.2.0] - 2026-01-12
+
+### Adicionado
+- Preferência de tema por usuário (claro/escuro/sistema)
+- Seletor de tema na barra lateral com 3 opções
+- Sincronização automática com tema do sistema operacional
+- Persistência da preferência de tema no banco de dados
+
+### Alterado
+- Tema agora é individual para cada membro da família
+- Cada usuário pode escolher seu próprio tema ao fazer login
 
 ## [1.1.0] - 2026-01-12
 

@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
         id, name, avatar, role, birthday, pin,
         points, unlocked_hours, has_tv_access,
         current_streak, longest_streak, last_streak_date,
-        created_at, updated_at
+        theme_preference, created_at, updated_at
       FROM children
       ORDER BY role DESC, name ASC
     `).all();
@@ -29,6 +29,7 @@ router.get('/', (req, res) => {
         unlockedHours: child.unlocked_hours,
         currentStreak: child.current_streak || 0,
         longestStreak: child.longest_streak || 0,
+        themePreference: child.theme_preference || 'system',
         tasks: tasks.map(t => ({
           ...t,
           completed: Boolean(t.completed),
@@ -109,12 +110,12 @@ router.post('/', (req, res) => {
 // Update child
 router.put('/:id', (req, res) => {
   try {
-    const { name, avatar, role, birthday, pin, points, unlockedHours, hasTVAccess } = req.body;
+    const { name, avatar, role, birthday, pin, points, unlockedHours, hasTVAccess, themePreference } = req.body;
     const db = getDatabase();
-    
+
     const updates = [];
     const values = [];
-    
+
     if (name !== undefined) { updates.push('name = ?'); values.push(name); }
     if (avatar !== undefined) { updates.push('avatar = ?'); values.push(avatar); }
     if (role !== undefined) { updates.push('role = ?'); values.push(role); }
@@ -123,15 +124,16 @@ router.put('/:id', (req, res) => {
     if (points !== undefined) { updates.push('points = ?'); values.push(points); }
     if (unlockedHours !== undefined) { updates.push('unlocked_hours = ?'); values.push(unlockedHours); }
     if (hasTVAccess !== undefined) { updates.push('has_tv_access = ?'); values.push(hasTVAccess ? 1 : 0); }
-    
+    if (themePreference !== undefined) { updates.push('theme_preference = ?'); values.push(themePreference); }
+
     updates.push('updated_at = CURRENT_TIMESTAMP');
     values.push(req.params.id);
-    
+
     const stmt = db.prepare(`UPDATE children SET ${updates.join(', ')} WHERE id = ?`);
     stmt.run(...values);
-    
+
     const updated = db.prepare('SELECT * FROM children WHERE id = ?').get(req.params.id);
-    res.json(updated);
+    res.json({ ...updated, themePreference: updated.theme_preference || 'system' });
   } catch (error) {
     console.error('Update child error:', error);
     res.status(500).json({ error: 'Failed to update child' });

@@ -178,6 +178,9 @@ export function initDatabase() {
       if (!childrenCols.includes('last_streak_date')) {
         db.exec('ALTER TABLE children ADD COLUMN last_streak_date TEXT');
       }
+      if (!childrenCols.includes('theme_preference')) {
+        db.exec("ALTER TABLE children ADD COLUMN theme_preference TEXT DEFAULT 'system' CHECK(theme_preference IN ('light', 'dark', 'system'))");
+      }
 
       // Add completed_at to tasks if it doesn't exist
       const tasksInfo = db.prepare("PRAGMA table_info(tasks)").all();

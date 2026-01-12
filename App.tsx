@@ -67,15 +67,43 @@ const App: React.FC = () => {
     fetchData();
   }, []);
 
-  // Apply theme
+  // Get current theme based on user preference
+  const getCurrentTheme = (): 'light' | 'dark' => {
+    const userPref = authenticatedMember?.themePreference;
+    if (userPref === 'system' || !userPref) {
+      // Use system preference
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return userPref;
+  };
+
+  // Apply theme based on authenticated user's preference
   useEffect(() => {
     const html = document.documentElement;
-    if (systemSettings.theme === 'dark') {
+    const theme = getCurrentTheme();
+    if (theme === 'dark') {
       html.classList.add('dark');
     } else {
       html.classList.remove('dark');
     }
-  }, [systemSettings.theme]);
+  }, [authenticatedMember?.themePreference]);
+
+  // Listen for system theme changes when user prefers system
+  useEffect(() => {
+    if (authenticatedMember?.themePreference === 'system' || !authenticatedMember?.themePreference) {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = () => {
+        const html = document.documentElement;
+        if (mediaQuery.matches) {
+          html.classList.add('dark');
+        } else {
+          html.classList.remove('dark');
+        }
+      };
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+  }, [authenticatedMember?.themePreference]);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -318,8 +346,25 @@ const App: React.FC = () => {
       await API.children.update(child.id, child);
       const updatedChildren = await API.children.getAll();
       setChildren(updatedChildren);
+      // Update authenticated member if it's the same user
+      if (authenticatedMember?.id === child.id) {
+        setAuthenticatedMember(child);
+      }
     } catch (err: any) {
       alert(`Erro ao atualizar membro: ${err.message}`);
+    }
+  };
+
+  const handleChangeTheme = async (theme: 'light' | 'dark' | 'system') => {
+    if (!authenticatedMember) return;
+    const updatedMember = { ...authenticatedMember, themePreference: theme };
+    try {
+      await API.children.update(authenticatedMember.id, updatedMember);
+      setAuthenticatedMember(updatedMember);
+      const updatedChildren = await API.children.getAll();
+      setChildren(updatedChildren);
+    } catch (err: any) {
+      console.error('Erro ao atualizar tema:', err.message);
     }
   };
 
@@ -486,7 +531,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`flex min-h-screen ${systemSettings.theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} transition-colors duration-300`}>
+    <div className={`flex min-h-screen ${getCurrentTheme() === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} transition-colors duration-300`}>
       {activeView !== 'login' && (
         <Sidebar
           activeView={activeView}
@@ -497,6 +542,8 @@ const App: React.FC = () => {
           upcomingBirthdays={upcomingBirthdays}
           isOpen={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
+          currentTheme={getCurrentTheme()}
+          onChangeTheme={handleChangeTheme}
         />
       )}
       <main className={`flex-1 ${activeView !== 'login' ? 'lg:ml-64' : ''} min-h-screen pt-16 lg:pt-0`}>

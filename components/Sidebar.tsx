@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Home, Users, Tv, Settings, ShieldAlert, Calendar, LayoutDashboard, ShoppingBag, LogOut, Lock, Cake, PartyPopper, Menu, X, Info, FileText } from 'lucide-react';
+import { Home, Users, Tv, Settings, ShieldAlert, Calendar, LayoutDashboard, ShoppingBag, LogOut, Lock, Cake, PartyPopper, Menu, X, Info, FileText, Sun, Moon, Monitor } from 'lucide-react';
 import { Child } from '../types';
 import { APP_VERSION, CHANGELOG } from '../version';
 
@@ -13,10 +13,13 @@ interface SidebarProps {
   upcomingBirthdays?: Child[];
   isOpen: boolean;
   onToggle: () => void;
+  currentTheme?: 'light' | 'dark';
+  onChangeTheme?: (theme: 'light' | 'dark' | 'system') => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, onLogout, currentUser, isReadOnly, upcomingBirthdays = [], isOpen, onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, onLogout, currentUser, isReadOnly, upcomingBirthdays = [], isOpen, onToggle, currentTheme, onChangeTheme }) => {
   const [showChangelog, setShowChangelog] = useState(false);
+  const userThemePref = currentUser?.themePreference || 'system';
 
   const menuItems = [
     { id: 'parent-dashboard', label: 'Dashboard Pais', icon: LayoutDashboard, adminOnly: true },
@@ -148,6 +151,37 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, onLogout, c
               </div>
             </div>
           )}
+
+          {/* Theme Toggle */}
+          {onChangeTheme && (
+            <div className="flex items-center justify-between bg-indigo-800/30 rounded-xl p-2">
+              <span className="text-xs text-indigo-300 font-medium pl-2">Tema</span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => onChangeTheme('light')}
+                  className={`p-2 rounded-lg transition ${userThemePref === 'light' ? 'bg-amber-500 text-white' : 'text-indigo-300 hover:bg-indigo-700'}`}
+                  title="Modo Claro"
+                >
+                  <Sun size={14} />
+                </button>
+                <button
+                  onClick={() => onChangeTheme('dark')}
+                  className={`p-2 rounded-lg transition ${userThemePref === 'dark' ? 'bg-indigo-500 text-white' : 'text-indigo-300 hover:bg-indigo-700'}`}
+                  title="Modo Escuro"
+                >
+                  <Moon size={14} />
+                </button>
+                <button
+                  onClick={() => onChangeTheme('system')}
+                  className={`p-2 rounded-lg transition ${userThemePref === 'system' ? 'bg-slate-500 text-white' : 'text-indigo-300 hover:bg-indigo-700'}`}
+                  title="Seguir Sistema"
+                >
+                  <Monitor size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+
           <button
             onClick={onLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-indigo-300 hover:bg-rose-500/10 hover:text-rose-400 transition-all font-bold text-sm"
