@@ -501,6 +501,110 @@ const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
               </div>
 
+              {/* Telegram Integration */}
+              <div className={`p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[3rem] border shadow-sm ${systemSettings.theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <h3 className="text-lg sm:text-xl font-black mb-4 sm:mb-6 flex items-center gap-3 dark:text-white">
+                  <MessageSquare className="text-blue-500" /> Telegram
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 mb-4 sm:mb-6">
+                  Receba notificações no Telegram quando tarefas forem concluídas ou prêmios resgatados.
+                </p>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Bot Token</label>
+                    <input
+                      type="text"
+                      value={localSettings.telegramBotToken || ''}
+                      onChange={e => setLocalSettings({...localSettings, telegramBotToken: e.target.value})}
+                      placeholder="123456789:ABCdefGHIjklMNOpqrSTUvwxYZ"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-mono outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Chat ID</label>
+                    <input
+                      type="text"
+                      value={localSettings.telegramChatId || ''}
+                      onChange={e => setLocalSettings({...localSettings, telegramChatId: e.target.value})}
+                      placeholder="123456789"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-mono outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={handleSendTelegramTest}
+                      disabled={telegramTestStatus === 'loading' || !localSettings.telegramBotToken || !localSettings.telegramChatId}
+                      className="flex-1 flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 px-4 py-3 rounded-xl text-sm font-bold hover:bg-blue-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {telegramTestStatus === 'loading' ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : telegramTestStatus === 'success' ? (
+                        <CheckCircle2 size={16} />
+                      ) : telegramTestStatus === 'error' ? (
+                        <XCircle size={16} />
+                      ) : (
+                        <Send size={16} />
+                      )}
+                      Enviar Teste
+                    </button>
+                  </div>
+                  {telegramTestMessage && (
+                    <p className={`text-xs font-bold ${telegramTestStatus === 'success' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                      {telegramTestMessage}
+                    </p>
+                  )}
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 sm:p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                    <p className="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 font-medium">
+                      <strong>Como configurar:</strong><br/>
+                      1. No Telegram, fale com @BotFather e crie um bot<br/>
+                      2. Copie o token do bot<br/>
+                      3. Inicie conversa com seu bot e envie uma mensagem<br/>
+                      4. Acesse: api.telegram.org/bot[TOKEN]/getUpdates<br/>
+                      5. Copie o chat.id do resultado
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Google Calendar */}
+              <div className={`p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[3rem] border shadow-sm ${systemSettings.theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <h3 className="text-lg sm:text-xl font-black mb-4 sm:mb-6 flex items-center gap-3 dark:text-white">
+                  <Calendar className="text-green-500" /> Google Calendar
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 mb-4 sm:mb-6">
+                  Sincronize eventos da família com o Google Calendar.
+                </p>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  {calendarStatus.loading ? (
+                    <div className="flex items-center gap-2 text-slate-500">
+                      <Loader2 size={16} className="animate-spin" />
+                      <span className="text-sm">Verificando...</span>
+                    </div>
+                  ) : calendarStatus.connected ? (
+                    <>
+                      <div className="flex items-center gap-2 text-emerald-600">
+                        <CheckCircle2 size={18} />
+                        <span className="text-sm font-bold">Conectado</span>
+                      </div>
+                      <button
+                        onClick={handleDisconnectCalendar}
+                        className="text-sm text-rose-500 font-bold hover:underline"
+                      >
+                        Desconectar
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleConnectCalendar}
+                      className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-600 px-4 py-3 rounded-xl text-sm font-bold hover:bg-green-100 transition"
+                    >
+                      <ExternalLink size={16} />
+                      Conectar Google Calendar
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {/* Save Button */}
               <div className="fixed bottom-4 sm:bottom-8 right-4 sm:right-8 z-[60]">
                 <button onClick={handleSavePreferences} className="bg-indigo-600 text-white px-6 sm:px-10 py-4 sm:py-5 rounded-2xl sm:rounded-[2rem] font-black shadow-2xl hover:bg-indigo-700 transition active:scale-95 flex items-center gap-2 sm:gap-3 uppercase tracking-widest text-xs sm:text-sm">
