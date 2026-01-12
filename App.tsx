@@ -531,7 +531,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`flex min-h-screen ${getCurrentTheme() === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} transition-colors duration-300`}>
+    <div className={`flex min-h-screen ${getCurrentTheme() === 'dark' ? 'bg-norton-darker text-gray-100' : 'bg-gray-100 text-gray-900'} transition-colors duration-300`}>
       {activeView !== 'login' && (
         <Sidebar
           activeView={activeView}

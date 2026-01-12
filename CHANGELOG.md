@@ -5,6 +5,21 @@ Todas as alterações notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.3.0] - 2026-01-12
+
+### Alterado
+- **Redesign completo inspirado no Norton**
+  - Nova paleta de cores: amarelo dourado (#FFE600) com fundo escuro
+  - Sidebar redesenhada com estilo Norton
+  - Tela de login com novo visual
+  - Cards e botões com novo estilo
+  - Modais com bordas e cores Norton
+
+### Adicionado
+- Cores customizadas no Tailwind (norton-yellow, norton-dark, etc.)
+- Efeitos de glow amarelo no background
+- Ícone de escudo no logo
+
 ## [1.2.0] - 2026-01-12
 
 ### Adicionado

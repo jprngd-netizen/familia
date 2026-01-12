@@ -21,7 +21,6 @@ const LoginView: React.FC<LoginViewProps> = ({ children, onLogin, onSetupComplet
   const [setupError, setSetupError] = useState('');
   const [setupLoading, setSetupLoading] = useState(false);
 
-  // Show setup if no children exist
   const showSetup = children.length === 0;
 
   const handleSetup = async () => {
@@ -81,80 +80,81 @@ const LoginView: React.FC<LoginViewProps> = ({ children, onLogin, onSetupComplet
     onLogin(child, true);
   };
 
-  // Show setup screen for first run
+  // Setup screen - Norton Style
   if (showSetup) {
     return (
-      <div className="min-h-screen bg-indigo-950 flex items-center justify-center p-4 sm:p-6 font-kids overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-          <div className="absolute top-10 left-10 w-32 sm:w-64 h-32 sm:h-64 bg-indigo-500 rounded-full blur-[80px] sm:blur-[120px]" />
-          <div className="absolute bottom-10 right-10 w-48 sm:w-96 h-48 sm:h-96 bg-emerald-500 rounded-full blur-[100px] sm:blur-[150px]" />
+      <div className="min-h-screen bg-norton-darker flex items-center justify-center p-4 sm:p-6 font-kids overflow-hidden relative">
+        {/* Background Effects */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+          <div className="absolute top-10 left-10 w-32 sm:w-64 h-32 sm:h-64 bg-norton-yellow rounded-full blur-[100px] sm:blur-[150px]" />
+          <div className="absolute bottom-10 right-10 w-48 sm:w-96 h-48 sm:h-96 bg-norton-gold rounded-full blur-[120px] sm:blur-[180px]" />
         </div>
 
         <div className="w-full max-w-md relative z-10">
           <div className="text-center mb-8 sm:mb-12">
-            <div className="inline-flex items-center gap-2 sm:gap-3 bg-white/10 px-4 sm:px-6 py-2 sm:py-3 rounded-full mb-4 sm:mb-6 border border-white/10">
-              <Shield className="text-emerald-400" size={20} />
-              <span className="text-white font-black tracking-widest uppercase text-xs sm:text-sm">Configuração Inicial</span>
+            <div className="inline-flex items-center gap-2 sm:gap-3 bg-norton-yellow/10 border border-norton-yellow/30 px-4 sm:px-6 py-2 sm:py-3 rounded-full mb-4 sm:mb-6">
+              <Shield className="text-norton-yellow" size={20} />
+              <span className="text-norton-yellow font-black tracking-widest uppercase text-xs sm:text-sm">Configuração Inicial</span>
             </div>
             <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter mb-3 sm:mb-4">Portal Família</h1>
-            <p className="text-indigo-200 text-base sm:text-lg font-medium">Crie seu perfil de administrador</p>
+            <p className="text-gray-400 text-base sm:text-lg font-medium">Crie seu perfil de administrador</p>
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8">
+          <div className="bg-norton-card border border-norton-border rounded-2xl sm:rounded-3xl p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-emerald-500/20 rounded-xl">
-                <UserPlus className="text-emerald-400" size={24} />
+              <div className="p-3 bg-norton-yellow/10 border border-norton-yellow/20 rounded-xl">
+                <UserPlus className="text-norton-yellow" size={24} />
               </div>
               <div>
                 <h2 className="text-white font-bold text-lg">Primeiro Acesso</h2>
-                <p className="text-indigo-300 text-sm">Configure o administrador da família</p>
+                <p className="text-gray-500 text-sm">Configure o administrador da família</p>
               </div>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="text-indigo-200 text-sm font-bold block mb-2">Seu Nome</label>
+                <label className="text-gray-400 text-sm font-bold block mb-2">Seu Nome</label>
                 <input
                   type="text"
                   value={setupName}
                   onChange={(e) => setSetupName(e.target.value)}
                   placeholder="Ex: João"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-indigo-300/50 focus:outline-none focus:border-emerald-400"
+                  className="w-full bg-norton-dark border border-norton-border rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-norton-yellow transition"
                 />
               </div>
 
               <div>
-                <label className="text-indigo-200 text-sm font-bold block mb-2">PIN (4 dígitos)</label>
+                <label className="text-gray-400 text-sm font-bold block mb-2">PIN (4 dígitos)</label>
                 <input
                   type="password"
                   maxLength={4}
                   value={setupPin}
                   onChange={(e) => setSetupPin(e.target.value.replace(/\D/g, ''))}
                   placeholder="••••"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-indigo-300/50 focus:outline-none focus:border-emerald-400 text-center text-2xl tracking-[0.5em]"
+                  className="w-full bg-norton-dark border border-norton-border rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-norton-yellow text-center text-2xl tracking-[0.5em] transition"
                 />
               </div>
 
               <div>
-                <label className="text-indigo-200 text-sm font-bold block mb-2">Confirmar PIN</label>
+                <label className="text-gray-400 text-sm font-bold block mb-2">Confirmar PIN</label>
                 <input
                   type="password"
                   maxLength={4}
                   value={setupConfirmPin}
                   onChange={(e) => setSetupConfirmPin(e.target.value.replace(/\D/g, ''))}
                   placeholder="••••"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-indigo-300/50 focus:outline-none focus:border-emerald-400 text-center text-2xl tracking-[0.5em]"
+                  className="w-full bg-norton-dark border border-norton-border rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-norton-yellow text-center text-2xl tracking-[0.5em] transition"
                 />
               </div>
 
               {setupError && (
-                <p className="text-rose-400 text-sm font-bold text-center">{setupError}</p>
+                <p className="text-norton-danger text-sm font-bold text-center">{setupError}</p>
               )}
 
               <button
                 onClick={handleSetup}
                 disabled={setupLoading}
-                className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-500/50 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                className="w-full bg-norton-yellow hover:bg-norton-gold disabled:opacity-50 text-norton-dark font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-norton-yellow/20"
               >
                 {setupLoading ? 'Criando...' : 'Criar Perfil de Admin'}
                 {!setupLoading && <ChevronRight size={20} />}
@@ -167,45 +167,45 @@ const LoginView: React.FC<LoginViewProps> = ({ children, onLogin, onSetupComplet
   }
 
   return (
-    <div className="min-h-screen bg-indigo-950 flex items-center justify-center p-4 sm:p-6 font-kids overflow-hidden relative">
-      {/* Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-        <div className="absolute top-10 left-10 w-32 sm:w-64 h-32 sm:h-64 bg-indigo-500 rounded-full blur-[80px] sm:blur-[120px]" />
-        <div className="absolute bottom-10 right-10 w-48 sm:w-96 h-48 sm:h-96 bg-emerald-500 rounded-full blur-[100px] sm:blur-[150px]" />
+    <div className="min-h-screen bg-norton-darker flex items-center justify-center p-4 sm:p-6 font-kids overflow-hidden relative">
+      {/* Background Effects */}
+      <div className="absolute top-0 left-0 w-full h-full opacity-15 pointer-events-none">
+        <div className="absolute top-10 left-10 w-32 sm:w-64 h-32 sm:h-64 bg-norton-yellow rounded-full blur-[100px] sm:blur-[150px]" />
+        <div className="absolute bottom-10 right-10 w-48 sm:w-96 h-48 sm:h-96 bg-norton-gold rounded-full blur-[120px] sm:blur-[180px]" />
       </div>
 
       <div className="w-full max-w-4xl relative z-10">
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-          <div className="inline-flex items-center gap-2 sm:gap-3 bg-white/10 px-4 sm:px-6 py-2 sm:py-3 rounded-full mb-4 sm:mb-6 border border-white/10">
-            <Shield className="text-emerald-400" size={20} />
-            <span className="text-white font-black tracking-widest uppercase text-xs sm:text-sm">Residência Protegida</span>
+          <div className="inline-flex items-center gap-2 sm:gap-3 bg-norton-yellow/10 border border-norton-yellow/30 px-4 sm:px-6 py-2 sm:py-3 rounded-full mb-4 sm:mb-6">
+            <Shield className="text-norton-yellow" size={20} />
+            <span className="text-norton-yellow font-black tracking-widest uppercase text-xs sm:text-sm">Proteção Familiar</span>
           </div>
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter mb-3 sm:mb-4">Portal Família</h1>
-          <p className="text-indigo-200 text-base sm:text-lg lg:text-xl font-medium">Selecione seu perfil para continuar</p>
+          <p className="text-gray-400 text-base sm:text-lg lg:text-xl font-medium">Selecione seu perfil para continuar</p>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {children.map((child) => (
             <div key={child.id} className="group relative">
-               <button
+              <button
                 onClick={() => handleProfileClick(child)}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl sm:rounded-[3rem] p-4 sm:p-6 transition-all hover:bg-white/10 hover:border-indigo-400/50 hover:-translate-y-2 flex flex-col items-center gap-3 sm:gap-4"
+                className="w-full bg-norton-card border border-norton-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 transition-all hover:bg-norton-cardHover hover:border-norton-yellow/50 hover:-translate-y-2 flex flex-col items-center gap-3 sm:gap-4"
               >
                 <div className="relative">
-                  <img src={child.avatar} className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full border-2 sm:border-4 border-white/10 shadow-2xl" alt="" />
-                  <div className={`absolute -bottom-1 -right-1 p-1.5 sm:p-2 rounded-full border-2 border-indigo-950 shadow-lg ${child.role === 'Adulto' ? 'bg-amber-500' : 'bg-indigo-500'}`}>
-                    <KeyRound size={12} className="sm:w-[14px] sm:h-[14px] text-white" />
+                  <img src={child.avatar} className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full border-2 sm:border-4 border-norton-border shadow-2xl" alt="" />
+                  <div className={`absolute -bottom-1 -right-1 p-1.5 sm:p-2 rounded-full border-2 border-norton-dark shadow-lg ${child.role === 'Adulto' ? 'bg-norton-yellow' : 'bg-gray-600'}`}>
+                    <KeyRound size={12} className={`sm:w-[14px] sm:h-[14px] ${child.role === 'Adulto' ? 'text-norton-dark' : 'text-white'}`} />
                   </div>
                 </div>
                 <div className="text-center">
                   <p className="text-white font-bold text-base sm:text-lg lg:text-xl">{child.name}</p>
-                  <p className="text-indigo-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest">{child.role}</p>
+                  <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${child.role === 'Adulto' ? 'text-norton-yellow' : 'text-gray-500'}`}>{child.role}</p>
                 </div>
               </button>
 
               <button
                 onClick={(e) => { e.stopPropagation(); handleQuickView(child); }}
-                className="absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all bg-white text-indigo-900 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase shadow-xl hover:scale-105"
+                className="absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all bg-norton-yellow text-norton-dark px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase shadow-xl hover:scale-105"
               >
                 Ver Status
               </button>
@@ -214,40 +214,40 @@ const LoginView: React.FC<LoginViewProps> = ({ children, onLogin, onSetupComplet
         </div>
       </div>
 
-      {/* PIN Modal */}
+      {/* PIN Modal - Norton Style */}
       {mode === 'pin' && selectedProfile && (
-        <div className="fixed inset-0 bg-indigo-950/90 backdrop-blur-xl z-[100] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl sm:rounded-[4rem] p-6 sm:p-10 lg:p-12 max-w-sm w-full shadow-2xl text-center relative">
+        <div className="fixed inset-0 bg-norton-darker/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300">
+          <div className="bg-norton-card border border-norton-border rounded-3xl sm:rounded-[3rem] p-6 sm:p-10 lg:p-12 max-w-sm w-full shadow-2xl text-center relative">
             <button
               onClick={() => setMode('selection')}
-              className="absolute top-4 right-4 sm:top-8 sm:right-8 text-slate-400 hover:bg-slate-100 p-2 rounded-full transition"
+              className="absolute top-4 right-4 sm:top-8 sm:right-8 text-gray-500 hover:text-white hover:bg-norton-cardHover p-2 rounded-full transition"
             >
               <X size={24} className="sm:w-7 sm:h-7" />
             </button>
 
-            <img src={selectedProfile.avatar} className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-indigo-50 shadow-xl mx-auto mb-4 sm:mb-6" alt="" />
-            <h2 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">Olá, {selectedProfile.name}!</h2>
-            <p className="text-slate-400 font-bold text-xs sm:text-sm mb-6 sm:mb-10">Digite seu PIN de 4 dígitos</p>
+            <img src={selectedProfile.avatar} className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-norton-yellow/30 shadow-xl mx-auto mb-4 sm:mb-6" alt="" />
+            <h2 className="text-xl sm:text-2xl font-black text-white mb-2">Olá, {selectedProfile.name}!</h2>
+            <p className="text-gray-500 font-bold text-xs sm:text-sm mb-6 sm:mb-10">Digite seu PIN de 4 dígitos</p>
 
             <div className="flex justify-center gap-3 sm:gap-4 mb-6 sm:mb-10">
               {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}
                   className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 transition-all duration-300 ${
-                    pin.length > i ? (error ? 'bg-rose-500 border-rose-500 scale-125' : 'bg-indigo-600 border-indigo-600 scale-125') : 'border-slate-200'
+                    pin.length > i ? (error ? 'bg-norton-danger border-norton-danger scale-125' : 'bg-norton-yellow border-norton-yellow scale-125') : 'border-gray-600'
                   }`}
                 />
               ))}
             </div>
 
-            <div className="grid grid-cols-3 gap-2 sm:gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].map((val, i) => (
                 <button
                   key={i}
                   disabled={val === ''}
                   onClick={() => val === '⌫' ? setPin(pin.slice(0, -1)) : handlePinClick(val)}
-                  className={`h-12 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black transition active:scale-90 ${
-                    val === '' ? 'opacity-0' : 'bg-slate-50 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600'
+                  className={`h-12 sm:h-14 rounded-xl flex items-center justify-center text-xl sm:text-2xl font-bold transition active:scale-90 ${
+                    val === '' ? 'opacity-0' : 'bg-norton-dark border border-norton-border text-white hover:bg-norton-cardHover hover:border-norton-yellow/50'
                   }`}
                 >
                   {val}
@@ -255,7 +255,7 @@ const LoginView: React.FC<LoginViewProps> = ({ children, onLogin, onSetupComplet
               ))}
             </div>
 
-            {error && <p className="text-rose-500 font-bold mt-4 sm:mt-6 animate-bounce text-sm sm:text-base">PIN Incorreto!</p>}
+            {error && <p className="text-norton-danger font-bold mt-4 sm:mt-6 animate-bounce text-sm sm:text-base">PIN Incorreto!</p>}
           </div>
         </div>
       )}

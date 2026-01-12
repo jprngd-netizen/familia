@@ -1,9 +1,24 @@
 // Application version - update this when releasing new versions
-export const APP_VERSION = '1.2.0';
+export const APP_VERSION = '1.3.0';
 
 // Changelog content for display in the app
 export const CHANGELOG = `
 # Changelog
+
+## [1.3.0] - 2026-01-12
+
+### Alterado
+- **Redesign completo inspirado no Norton**
+  - Nova paleta de cores: amarelo dourado (#FFE600) com fundo escuro
+  - Sidebar redesenhada com estilo Norton
+  - Tela de login com novo visual
+  - Cards e botões com novo estilo
+  - Modais com bordas e cores Norton
+
+### Adicionado
+- Cores customizadas no Tailwind (norton-yellow, norton-dark, etc.)
+- Efeitos de glow amarelo no background
+- Ícone de escudo no logo
 
 ## [1.2.0] - 2026-01-12
 
