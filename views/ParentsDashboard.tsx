@@ -3,13 +3,16 @@ import React, { useState } from 'react';
 import {
   TrendingUp, Activity, ShieldAlert, Plus, CheckCircle2, X, AlertTriangle, Coins, Clock, Check, Ban, Shield
 } from 'lucide-react';
-import { Child, ActivityLog, Reward, RewardRequest } from '../types';
+import { Child, ActivityLog, Reward, RewardRequest, Notice } from '../types';
+import NoticeBoard from '../components/NoticeBoard';
 
 interface ParentsDashboardProps {
   children: Child[];
   logs: ActivityLog[];
   rewards: Reward[];
   rewardRequests: RewardRequest[];
+  notices: Notice[];
+  currentUser: Child | null;
   onProcessRequest: (requestId: string, approve: boolean) => void;
   onApplyPunishment: (childId: string, reason: string, type: 'Block' | 'PointLoss', amount?: number) => void;
   onCreateReward: (reward: Omit<Reward, 'id'>) => void;
@@ -18,10 +21,15 @@ interface ParentsDashboardProps {
   onChildClick: (id: string) => void;
   onQuickUnlock: (id: string) => void;
   onToggleTV: (childId: string) => void;
+  onCreateNotice: (content: string) => Promise<void>;
+  onHideNotice: (noticeId: string) => Promise<void>;
+  onUnhideNotice: (noticeId: string) => Promise<void>;
+  onDeleteNotice: (noticeId: string) => Promise<void>;
 }
 
 const ParentsDashboard: React.FC<ParentsDashboardProps> = ({
-  children, logs, rewardRequests, onProcessRequest, onAdjustPoints, onChildClick, onQuickUnlock, onToggleTV
+  children, logs, rewardRequests, notices, currentUser, onProcessRequest, onAdjustPoints, onChildClick, onQuickUnlock, onToggleTV,
+  onCreateNotice, onHideNotice, onUnhideNotice, onDeleteNotice
 }) => {
   return (
     <div className="p-4 sm:p-6 lg:p-8 pb-24 space-y-6 lg:space-y-8 animate-in fade-in duration-500">
@@ -114,6 +122,16 @@ const ParentsDashboard: React.FC<ParentsDashboardProps> = ({
         </div>
 
         <div className="space-y-6 lg:space-y-8">
+           {/* Mural de Avisos */}
+           <NoticeBoard
+             notices={notices}
+             currentUser={currentUser}
+             onCreateNotice={onCreateNotice}
+             onHideNotice={onHideNotice}
+             onUnhideNotice={onUnhideNotice}
+             onDeleteNotice={onDeleteNotice}
+           />
+
            <div className="bg-gradient-to-br from-theme-dark to-theme-darker p-6 sm:p-8 rounded-2xl sm:rounded-[3rem] text-white shadow-xl border border-theme-border flex flex-col items-center text-center">
               <Activity size={40} className="sm:w-12 sm:h-12 text-theme-primary mb-4 sm:mb-6" />
               <h4 className="text-xl sm:text-2xl font-black mb-2">Engajamento Semanal</h4>

@@ -14,6 +14,7 @@ import settingsRoutes from './routes/settings.js';
 import logsRoutes from './routes/logs.js';
 import authRoutes from './routes/auth.js';
 import calendarRoutes from './routes/calendar.js'; // Import calendar routes
+import noticesRoutes from './routes/notices.js'; // Import notices routes
 import { errorHandler } from './middleware/errorHandler.js';
 import { requestLogger } from './middleware/requestLogger.js';
 
@@ -80,6 +81,7 @@ app.use('/api/devices', devicesRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/api/calendar', calendarRoutes); // Add calendar routes
+app.use('/api/notices', noticesRoutes); // Add notices routes
 
 // Error handling for API routes
 app.use('/api', errorHandler);

@@ -3,21 +3,29 @@ import React, { useState } from 'react';
 import {
   CheckCircle2, Circle, Trophy, Zap, ShoppingBag, PiggyBank, Heart, Repeat, Plus, Coins, X, Shield
 } from 'lucide-react';
-import { Child, Task, Reward } from '../types';
+import { Child, Task, Reward, Notice } from '../types';
 import { useKeywords } from '../ThemeContext';
+import NoticeBoard from '../components/NoticeBoard';
 
 interface KidsPortalProps {
   children: Child[];
   rewards: Reward[];
+  notices: Notice[];
+  currentUser: Child | null;
   onToggleTask: (childId: string, taskId: string) => void;
   onRedeemReward: (childId: string, rewardId: string) => void;
   isReadOnly?: boolean;
   initialSelectedId?: string;
   onAddTask?: (childId: string, task: Omit<Task, 'id' | 'completed'>) => void;
+  onCreateNotice: (content: string) => Promise<void>;
+  onHideNotice: (noticeId: string) => Promise<void>;
+  onUnhideNotice: (noticeId: string) => Promise<void>;
+  onDeleteNotice: (noticeId: string) => Promise<void>;
 }
 
 const KidsPortal: React.FC<KidsPortalProps> = ({
-  children, rewards, onToggleTask, onRedeemReward, isReadOnly = false, initialSelectedId, onAddTask
+  children, rewards, notices, currentUser, onToggleTask, onRedeemReward, isReadOnly = false, initialSelectedId, onAddTask,
+  onCreateNotice, onHideNotice, onUnhideNotice, onDeleteNotice
 }) => {
   const [selectedChildId, setSelectedChildId] = useState(initialSelectedId || children[0].id);
   const [showStore, setShowStore] = useState(false);
@@ -140,6 +148,18 @@ const KidsPortal: React.FC<KidsPortalProps> = ({
               <p className="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase">Pendentes</p>
             </div>
           </div>
+
+          {/* Mural de Avisos */}
+          {!isReadOnly && (
+            <NoticeBoard
+              notices={notices}
+              currentUser={currentUser}
+              onCreateNotice={onCreateNotice}
+              onHideNotice={onHideNotice}
+              onUnhideNotice={onUnhideNotice}
+              onDeleteNotice={onDeleteNotice}
+            />
+          )}
         </div>
       </div>
 

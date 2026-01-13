@@ -114,3 +114,14 @@ export interface ActivityLog {
   timestamp: string;
   type: 'success' | 'warning' | 'info';
 }
+
+export interface Notice {
+  id: string;
+  authorId: string;
+  authorName: string;
+  authorRole: MemberRole;
+  content: string;
+  createdAt: string;
+  hiddenByAuthor: boolean; // Se o autor (filho) ocultou
+  deletedByParent: boolean; // Se foi permanentemente deletado por adulto
+}

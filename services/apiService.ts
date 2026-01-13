@@ -268,6 +268,30 @@ export const calendarAPI = {
   },
 };
 
+// ==================== NOTICES ====================
+
+export const noticesAPI = {
+  getAll: async (viewerRole: string, viewerId: string) => {
+    return apiRequest<any[]>(`/notices?viewerRole=${encodeURIComponent(viewerRole)}&viewerId=${encodeURIComponent(viewerId)}`);
+  },
+
+  create: async (data: { authorId: string; authorName: string; authorRole: string; content: string }) => {
+    return apiRequest<any>('/notices', 'POST', data);
+  },
+
+  hide: async (id: string, authorId: string) => {
+    return apiRequest<{ success: boolean; message: string }>(`/notices/${id}/hide`, 'PUT', { authorId });
+  },
+
+  unhide: async (id: string, authorId: string) => {
+    return apiRequest<{ success: boolean; message: string }>(`/notices/${id}/unhide`, 'PUT', { authorId });
+  },
+
+  delete: async (id: string, requesterRole: string, requesterId: string) => {
+    return apiRequest<{ success: boolean; message: string }>(`/notices/${id}?requesterRole=${encodeURIComponent(requesterRole)}&requesterId=${encodeURIComponent(requesterId)}`, 'DELETE');
+  },
+};
+
 // ==================== HEALTH CHECK ====================
 
 export const healthAPI = {
@@ -284,6 +308,7 @@ export default {
   devices: devicesAPI,
   logs: logsAPI,
   settings: settingsAPI,
-  calendar: calendarAPI, // Add calendar module
+  calendar: calendarAPI,
+  notices: noticesAPI,
   health: healthAPI,
 };

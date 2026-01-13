@@ -9,7 +9,7 @@ import ChildDetailView from './views/ChildDetailView';
 import StoreView from './views/StoreView';
 import LoginView from './views/LoginView';
 import CalendarView from './views/CalendarView';
-import { Child, Task, ActivityLog, Punishment, Reward, MemberRole, Device, SystemSettings, RewardRequest, VisualTheme } from './types';
+import { Child, Task, ActivityLog, Punishment, Reward, MemberRole, Device, SystemSettings, RewardRequest, VisualTheme, Notice } from './types';
 import API from './services/apiService';
 import { ThemeProvider } from './ThemeContext';
 import { ThemeId, getThemeClass, DEFAULT_THEME } from './themes';
@@ -25,6 +25,7 @@ const App: React.FC = () => {
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [devices, setDevices] = useState<Device[]>([]);
   const [rewardRequests, setRewardRequests] = useState<RewardRequest[]>([]);
+  const [notices, setNotices] = useState<Notice[]>([]);
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({
     theme: 'light',
     notifications: { taskCompleted: true, rewardRedeemed: true, punishmentApplied: true },
@@ -68,6 +69,25 @@ const App: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Fetch notices when user is authenticated
+  const fetchNotices = async () => {
+    if (!authenticatedMember) return;
+    try {
+      const noticesData = await API.notices.getAll(authenticatedMember.role, authenticatedMember.id);
+      setNotices(noticesData);
+    } catch (err: any) {
+      console.error('Failed to fetch notices:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (authenticatedMember) {
+      fetchNotices();
+    } else {
+      setNotices([]);
+    }
+  }, [authenticatedMember?.id]);
 
   // Get current theme based on user preference
   const getCurrentTheme = (): 'light' | 'dark' => {
@@ -449,6 +469,59 @@ const App: React.FC = () => {
     }
   };
 
+  // Notice handlers
+  const handleCreateNotice = async (content: string) => {
+    if (!authenticatedMember) return;
+    try {
+      await API.notices.create({
+        authorId: authenticatedMember.id,
+        authorName: authenticatedMember.name,
+        authorRole: authenticatedMember.role,
+        content
+      });
+      await fetchNotices();
+      // Refresh logs
+      const updatedLogs = await API.logs.getRecent(50);
+      setLogs(updatedLogs);
+    } catch (err: any) {
+      alert(`Erro ao criar aviso: ${err.message}`);
+    }
+  };
+
+  const handleHideNotice = async (noticeId: string) => {
+    if (!authenticatedMember) return;
+    try {
+      await API.notices.hide(noticeId, authenticatedMember.id);
+      await fetchNotices();
+      const updatedLogs = await API.logs.getRecent(50);
+      setLogs(updatedLogs);
+    } catch (err: any) {
+      alert(`Erro ao ocultar aviso: ${err.message}`);
+    }
+  };
+
+  const handleUnhideNotice = async (noticeId: string) => {
+    if (!authenticatedMember) return;
+    try {
+      await API.notices.unhide(noticeId, authenticatedMember.id);
+      await fetchNotices();
+    } catch (err: any) {
+      alert(`Erro ao mostrar aviso: ${err.message}`);
+    }
+  };
+
+  const handleDeleteNotice = async (noticeId: string) => {
+    if (!authenticatedMember) return;
+    try {
+      await API.notices.delete(noticeId, authenticatedMember.role, authenticatedMember.id);
+      await fetchNotices();
+      const updatedLogs = await API.logs.getRecent(50);
+      setLogs(updatedLogs);
+    } catch (err: any) {
+      alert(`Erro ao excluir aviso: ${err.message}`);
+    }
+  };
+
   const renderContent = () => {
     if (loading && activeView === 'login') {
       return (
@@ -487,29 +560,41 @@ const App: React.FC = () => {
 
     switch (activeView) {
       case 'parent-dashboard':
-        return <ParentsDashboard 
-          children={children} 
-          logs={logs} 
-          rewards={rewards} 
+        return <ParentsDashboard
+          children={children}
+          logs={logs}
+          rewards={rewards}
           rewardRequests={rewardRequests}
+          notices={notices}
+          currentUser={authenticatedMember}
           onProcessRequest={handleProcessRewardRequest}
-          onApplyPunishment={() => {}} 
-          onCreateReward={handleCreateReward} 
-          onAdjustPoints={handleAdjustPoints} 
-          onResetAllowance={() => {}} 
-          onChildClick={(id) => { setSelectedChildId(id); setActiveView('child-detail'); }} 
-          onQuickUnlock={handleQuickUnlock} 
-          onToggleTV={handleToggleTV} 
+          onApplyPunishment={() => {}}
+          onCreateReward={handleCreateReward}
+          onAdjustPoints={handleAdjustPoints}
+          onResetAllowance={() => {}}
+          onChildClick={(id) => { setSelectedChildId(id); setActiveView('child-detail'); }}
+          onQuickUnlock={handleQuickUnlock}
+          onToggleTV={handleToggleTV}
+          onCreateNotice={handleCreateNotice}
+          onHideNotice={handleHideNotice}
+          onUnhideNotice={handleUnhideNotice}
+          onDeleteNotice={handleDeleteNotice}
         />;
       case 'kids-portal':
-        return <KidsPortal 
-          children={children} 
-          rewards={rewards} 
-          onToggleTask={handleToggleTask} 
-          onRedeemReward={handleRedeemReward} 
-          isReadOnly={isReadOnly} 
-          initialSelectedId={authenticatedMember?.id} 
-          onAddTask={handleAddTask} 
+        return <KidsPortal
+          children={children}
+          rewards={rewards}
+          notices={notices}
+          currentUser={authenticatedMember}
+          onToggleTask={handleToggleTask}
+          onRedeemReward={handleRedeemReward}
+          isReadOnly={isReadOnly}
+          initialSelectedId={authenticatedMember?.id}
+          onAddTask={handleAddTask}
+          onCreateNotice={handleCreateNotice}
+          onHideNotice={handleHideNotice}
+          onUnhideNotice={handleUnhideNotice}
+          onDeleteNotice={handleDeleteNotice}
         />;
       case 'store':
         return <StoreView 

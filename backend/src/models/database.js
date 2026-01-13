@@ -152,6 +152,18 @@ export function initDatabase() {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS notices (
+      id TEXT PRIMARY KEY,
+      author_id TEXT NOT NULL,
+      author_name TEXT NOT NULL,
+      author_role TEXT NOT NULL,
+      content TEXT NOT NULL,
+      hidden_by_author INTEGER DEFAULT 0,
+      deleted_by_parent INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (author_id) REFERENCES children(id) ON DELETE CASCADE
+    );
+
     -- Create indexes for better performance
     CREATE INDEX IF NOT EXISTS idx_tasks_child_id ON tasks(child_id);
     CREATE INDEX IF NOT EXISTS idx_devices_mac ON devices(mac);
