@@ -78,6 +78,8 @@ export interface SystemSettings {
   };
 }
 
+export type VisualTheme = 'norton' | 'pokemon' | 'space' | 'onepiece';
+
 export interface Child {
   id: string;
   name: string;
@@ -93,6 +95,7 @@ export interface Child {
   currentStreak?: number;
   longestStreak?: number;
   themePreference?: 'light' | 'dark' | 'system';
+  visualTheme?: VisualTheme;
 }
 
 export interface Punishment {

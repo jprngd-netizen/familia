@@ -34,20 +34,20 @@ const ParentsDashboard: React.FC<ParentsDashboardProps> = ({
 
       {/* Central de Aprovacao */}
       {rewardRequests.length > 0 && (
-        <div className="bg-norton-yellow/10 border-2 border-norton-yellow/30 rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 lg:p-8 animate-in zoom-in duration-300">
-           <h3 className="text-lg sm:text-xl font-black text-norton-yellow mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+        <div className="bg-theme-primary/10 border-2 border-theme-primary/30 rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 lg:p-8 animate-in zoom-in duration-300">
+           <h3 className="text-lg sm:text-xl font-black text-theme-primary mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
               <Clock size={20} className="sm:w-6 sm:h-6" /> Central de Aprovacao ({rewardRequests.length})
            </h3>
            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
               {rewardRequests.map(req => (
-                <div key={req.id} className="bg-norton-card p-6 rounded-3xl shadow-sm border border-norton-border flex flex-col justify-between">
+                <div key={req.id} className="bg-theme-card p-6 rounded-3xl shadow-sm border border-theme-border flex flex-col justify-between">
                    <div className="mb-4">
                       <div className="flex items-center gap-3 mb-3">
-                         <span className="bg-norton-yellow/20 text-norton-yellow px-2 py-1 rounded-lg text-[10px] font-black uppercase">Solicitacao Pendente</span>
+                         <span className="bg-theme-primary/20 text-theme-primary px-2 py-1 rounded-lg text-[10px] font-black uppercase">Solicitacao Pendente</span>
                          <span className="text-[10px] text-gray-500 font-bold ml-auto">{req.timestamp}</span>
                       </div>
                       <p className="text-lg font-bold text-white">{req.childName} quer resgatar:</p>
-                      <p className="text-norton-yellow font-black text-xl mb-2">{req.rewardTitle}</p>
+                      <p className="text-theme-primary font-black text-xl mb-2">{req.rewardTitle}</p>
                       <p className="text-sm font-bold text-gray-400 flex items-center gap-1">
                          <Coins size={14} /> Custo: {req.cost} pontos
                       </p>
@@ -55,13 +55,13 @@ const ParentsDashboard: React.FC<ParentsDashboardProps> = ({
                    <div className="flex gap-2">
                       <button
                         onClick={() => onProcessRequest(req.id, true)}
-                        className="flex-1 bg-norton-success text-white py-3 rounded-2xl font-black text-sm hover:brightness-110 transition flex items-center justify-center gap-2"
+                        className="flex-1 bg-theme-success text-white py-3 rounded-2xl font-black text-sm hover:brightness-110 transition flex items-center justify-center gap-2"
                       >
                          <Check size={18} /> Aprovar
                       </button>
                       <button
                         onClick={() => onProcessRequest(req.id, false)}
-                        className="flex-1 bg-norton-danger/20 text-norton-danger py-3 rounded-2xl font-black text-sm hover:bg-norton-danger/30 transition flex items-center justify-center gap-2"
+                        className="flex-1 bg-theme-danger/20 text-theme-danger py-3 rounded-2xl font-black text-sm hover:bg-theme-danger/30 transition flex items-center justify-center gap-2"
                       >
                          <X size={18} /> Negar
                       </button>
@@ -75,21 +75,21 @@ const ParentsDashboard: React.FC<ParentsDashboardProps> = ({
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
         <div className="xl:col-span-2 space-y-6 lg:space-y-8">
           {/* Card de Membros */}
-          <div className="bg-norton-card p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-norton-border">
+          <div className="bg-theme-card p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-theme-border">
              <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">Status da Familia</h3>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {children.map(child => (
-                   <div key={child.id} className="p-4 rounded-3xl border border-norton-border bg-norton-dark flex items-center justify-between group hover:border-norton-yellow/30 transition-all">
+                   <div key={child.id} className="p-4 rounded-3xl border border-theme-border bg-theme-dark flex items-center justify-between group hover:border-theme-primary/30 transition-all">
                       <button onClick={() => onChildClick(child.id)} className="flex items-center gap-3 text-left">
-                         <img src={child.avatar} className="w-12 h-12 rounded-2xl border-2 border-norton-border" alt="" />
+                         <img src={child.avatar} className="w-12 h-12 rounded-2xl border-2 border-theme-border" alt="" />
                          <div>
                             <p className="font-bold text-white">{child.name}</p>
-                            <p className="text-xs font-bold text-norton-yellow">{child.points} pts</p>
+                            <p className="text-xs font-bold text-theme-primary">{child.points} pts</p>
                          </div>
                       </button>
                       <div className="flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition">
-                         <button onClick={() => onToggleTV(child.id)} className={`p-2 rounded-xl transition ${child.hasTVAccess ? 'bg-norton-yellow text-norton-dark' : 'bg-norton-dark border border-norton-border text-gray-400'}`}><ShieldAlert size={16} /></button>
-                         <button onClick={() => onQuickUnlock(child.id)} className="p-2 bg-norton-dark border border-norton-border text-norton-yellow rounded-xl hover:bg-norton-cardHover"><Plus size={16} /></button>
+                         <button onClick={() => onToggleTV(child.id)} className={`p-2 rounded-xl transition ${child.hasTVAccess ? 'bg-theme-primary text-theme-dark' : 'bg-theme-dark border border-theme-border text-gray-400'}`}><ShieldAlert size={16} /></button>
+                         <button onClick={() => onQuickUnlock(child.id)} className="p-2 bg-theme-dark border border-theme-border text-theme-primary rounded-xl hover:bg-theme-cardHover"><Plus size={16} /></button>
                       </div>
                    </div>
                 ))}
@@ -97,12 +97,12 @@ const ParentsDashboard: React.FC<ParentsDashboardProps> = ({
           </div>
 
           {/* Logs Rapidos */}
-          <div className="bg-norton-card p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-norton-border">
+          <div className="bg-theme-card p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-theme-border">
              <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">Atividade Recente</h3>
              <div className="space-y-4">
                 {logs.slice(0, 5).map(log => (
                    <div key={log.id} className="flex gap-4 items-start">
-                      <div className={`w-2 h-2 mt-2 rounded-full ${log.type === 'success' ? 'bg-norton-success' : log.type === 'warning' ? 'bg-norton-danger' : 'bg-norton-yellow'}`} />
+                      <div className={`w-2 h-2 mt-2 rounded-full ${log.type === 'success' ? 'bg-theme-success' : log.type === 'warning' ? 'bg-theme-danger' : 'bg-theme-primary'}`} />
                       <div>
                          <p className="text-sm font-bold text-white">{log.action}</p>
                          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{log.childName} • {log.timestamp}</p>
@@ -114,14 +114,14 @@ const ParentsDashboard: React.FC<ParentsDashboardProps> = ({
         </div>
 
         <div className="space-y-6 lg:space-y-8">
-           <div className="bg-gradient-to-br from-norton-dark to-norton-darker p-6 sm:p-8 rounded-2xl sm:rounded-[3rem] text-white shadow-xl border border-norton-border flex flex-col items-center text-center">
-              <Activity size={40} className="sm:w-12 sm:h-12 text-norton-yellow mb-4 sm:mb-6" />
+           <div className="bg-gradient-to-br from-theme-dark to-theme-darker p-6 sm:p-8 rounded-2xl sm:rounded-[3rem] text-white shadow-xl border border-theme-border flex flex-col items-center text-center">
+              <Activity size={40} className="sm:w-12 sm:h-12 text-theme-primary mb-4 sm:mb-6" />
               <h4 className="text-xl sm:text-2xl font-black mb-2">Engajamento Semanal</h4>
               <p className="text-gray-400 text-xs sm:text-sm mb-4 sm:mb-6 leading-relaxed">As criancas estao completando 85% das missoes dentro do prazo esperado.</p>
-              <div className="w-full h-2 sm:h-3 bg-norton-border rounded-full overflow-hidden mb-2">
-                 <div className="h-full bg-norton-yellow" style={{width: '85%'}} />
+              <div className="w-full h-2 sm:h-3 bg-theme-border rounded-full overflow-hidden mb-2">
+                 <div className="h-full bg-theme-primary" style={{width: '85%'}} />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-norton-yellow">Meta: 90%</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-theme-primary">Meta: 90%</span>
            </div>
         </div>
       </div>

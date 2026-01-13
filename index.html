@@ -12,6 +12,22 @@
         theme: {
           extend: {
             colors: {
+              theme: {
+                primary: 'var(--theme-primary)',
+                secondary: 'var(--theme-secondary)',
+                accent: 'var(--theme-accent)',
+                dark: 'var(--theme-dark)',
+                darker: 'var(--theme-darker)',
+                card: 'var(--theme-card)',
+                cardHover: 'var(--theme-card-hover)',
+                border: 'var(--theme-border)',
+                success: 'var(--theme-success)',
+                danger: 'var(--theme-danger)',
+                muted: 'var(--theme-muted)',
+                text: 'var(--theme-text)',
+                textMuted: 'var(--theme-text-muted)',
+              },
+              // Keep norton as fallback for backwards compatibility
               norton: {
                 yellow: '#FFE600',
                 gold: '#FFD000',
@@ -34,17 +50,88 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
-            transition: background-color 0.5s ease;
+            transition: background-color 0.5s ease, color 0.3s ease;
         }
         .font-kids {
             font-family: 'Fredoka', sans-serif;
         }
-        
+
+        /* Theme CSS Variables */
+        :root, .theme-norton {
+          --theme-primary: #FFE600;
+          --theme-secondary: #FFD000;
+          --theme-accent: #FFE600;
+          --theme-dark: #0F0F0F;
+          --theme-darker: #0A0A0A;
+          --theme-card: #1A1A1A;
+          --theme-card-hover: #252525;
+          --theme-border: #2D2D2D;
+          --theme-success: #00D26A;
+          --theme-danger: #FF4757;
+          --theme-muted: #6B7280;
+          --theme-text: #FFFFFF;
+          --theme-text-muted: #9CA3AF;
+        }
+
+        .theme-pokemon {
+          --theme-primary: #FFCB05;
+          --theme-secondary: #3B4CCA;
+          --theme-accent: #FF0000;
+          --theme-dark: #1A1A2E;
+          --theme-darker: #0F0F1A;
+          --theme-card: #2A2A4A;
+          --theme-card-hover: #3A3A5A;
+          --theme-border: #4A4A6A;
+          --theme-success: #78C850;
+          --theme-danger: #F08030;
+          --theme-muted: #A0A0C0;
+          --theme-text: #FFFFFF;
+          --theme-text-muted: #B0B0D0;
+        }
+
+        .theme-space {
+          --theme-primary: #00D4FF;
+          --theme-secondary: #7B2FFF;
+          --theme-accent: #FF6B35;
+          --theme-dark: #0B0B1A;
+          --theme-darker: #050510;
+          --theme-card: #151530;
+          --theme-card-hover: #202050;
+          --theme-border: #2A2A5A;
+          --theme-success: #00FF88;
+          --theme-danger: #FF3366;
+          --theme-muted: #6B7DB3;
+          --theme-text: #E0E8FF;
+          --theme-text-muted: #8090C0;
+        }
+
+        .theme-onepiece {
+          --theme-primary: #E31B23;
+          --theme-secondary: #FFCC00;
+          --theme-accent: #1E90FF;
+          --theme-dark: #1A0A0A;
+          --theme-darker: #0F0505;
+          --theme-card: #2A1515;
+          --theme-card-hover: #3A2020;
+          --theme-border: #4A2A2A;
+          --theme-success: #32CD32;
+          --theme-danger: #FF4500;
+          --theme-muted: #8B7355;
+          --theme-text: #FFF8DC;
+          --theme-text-muted: #D4C4A8;
+        }
+
+        /* Theme-aware background for body */
+        .theme-norton body, .theme-norton { background-color: var(--theme-darker); }
+        .theme-pokemon body, .theme-pokemon { background-color: var(--theme-darker); }
+        .theme-space body, .theme-space { background-color: var(--theme-darker); }
+        .theme-onepiece body, .theme-onepiece { background-color: var(--theme-darker); }
+
         /* Estilos do Modo Festivo */
         .festive-mode {
             background-image: radial-gradient(circle at 10% 20%, rgba(216, 241, 230, 0.46) 0.1%, rgba(233, 226, 226, 0.28) 90.1%);
         }
-        
+
         @keyframes confetti-fall {
             0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
@@ -60,7 +147,7 @@
             animation: confetti-fall 4s linear infinite;
             pointer-events: none;
         }
-        
+
         .festive-border {
             border: 4px solid transparent;
             background-image: linear-gradient(white, white), linear-gradient(45deg, #f06, #9f6, #06f, #f60);
@@ -71,6 +158,42 @@
 
         @keyframes border-rotate {
             100% { filter: hue-rotate(360deg); }
+        }
+
+        /* Theme-specific decorations */
+        .theme-pokemon::before {
+          content: '';
+          position: fixed;
+          top: 10px;
+          right: 10px;
+          width: 50px;
+          height: 50px;
+          background: linear-gradient(to bottom, #FF0000 50%, #FFFFFF 50%);
+          border-radius: 50%;
+          border: 3px solid #333;
+          opacity: 0.1;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .theme-space::before {
+          content: '';
+          position: fixed;
+          inset: 0;
+          background-image:
+            radial-gradient(2px 2px at 20% 30%, white, transparent),
+            radial-gradient(2px 2px at 40% 70%, white, transparent),
+            radial-gradient(1px 1px at 90% 40%, white, transparent),
+            radial-gradient(2px 2px at 60% 80%, white, transparent),
+            radial-gradient(1px 1px at 70% 10%, white, transparent);
+          opacity: 0.3;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        /* Smooth transitions for theme changes */
+        * {
+          transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
         }
     </style>
 <script type="importmap">

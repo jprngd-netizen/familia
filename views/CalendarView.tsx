@@ -136,7 +136,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <button
             onClick={handleAuthenticate}
-            className="flex items-center justify-center gap-2 bg-norton-card border border-norton-border px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-norton-cardHover transition-all active:scale-95 text-gray-300"
+            className="flex items-center justify-center gap-2 bg-theme-card border border-theme-border px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-theme-cardHover transition-all active:scale-95 text-gray-300"
           >
             <Globe className="text-blue-400" size={18} />
             <span className="hidden sm:inline">Connect Google Calendar</span>
@@ -145,16 +145,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
           <button
             onClick={handleSync}
             disabled={isSyncing}
-            className="flex items-center justify-center gap-2 bg-norton-card border border-norton-border px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-norton-cardHover transition-all active:scale-95 disabled:opacity-50 text-gray-300"
+            className="flex items-center justify-center gap-2 bg-theme-card border border-theme-border px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-theme-cardHover transition-all active:scale-95 disabled:opacity-50 text-gray-300"
           >
-            <RefreshCw className={`text-norton-success ${isSyncing ? 'animate-spin' : ''}`} size={18} />
+            <RefreshCw className={`text-theme-success ${isSyncing ? 'animate-spin' : ''}`} size={18} />
             <span>Sincronizar</span>
           </button>
         </div>
       </header>
 
       {error && (
-        <div className="bg-norton-danger/20 border-l-4 border-norton-danger text-norton-danger p-4 rounded-md text-sm" role="alert">
+        <div className="bg-theme-danger/20 border-l-4 border-theme-danger text-theme-danger p-4 rounded-md text-sm" role="alert">
           <p className="font-bold">Erro</p>
           <p>{error}</p>
         </div>
@@ -163,25 +163,25 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Calendar Grid */}
         <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-          <div className="bg-norton-card rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 lg:p-8 shadow-sm border border-norton-border">
+          <div className="bg-theme-card rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 lg:p-8 shadow-sm border border-theme-border">
             {/* Month Navigation */}
             <div className="flex justify-between items-center mb-6 sm:mb-8">
               <div className="flex items-center gap-2 sm:gap-4">
                 <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-white capitalize">
                   {currentMonth.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}
                 </h3>
-                {isLoading && <RefreshCw size={16} className="text-norton-yellow animate-spin" />}
+                {isLoading && <RefreshCw size={16} className="text-theme-primary animate-spin" />}
               </div>
               <div className="flex gap-1 sm:gap-2">
                 <button
                   onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                  className="p-2 sm:p-3 hover:bg-norton-cardHover rounded-xl sm:rounded-2xl text-gray-400 transition"
+                  className="p-2 sm:p-3 hover:bg-theme-cardHover rounded-xl sm:rounded-2xl text-gray-400 transition"
                 >
                   <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
                 </button>
                 <button
                   onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                  className="p-2 sm:p-3 hover:bg-norton-cardHover rounded-xl sm:rounded-2xl text-gray-400 transition"
+                  className="p-2 sm:p-3 hover:bg-theme-cardHover rounded-xl sm:rounded-2xl text-gray-400 transition"
                 >
                   <ChevronRight size={20} className="sm:w-6 sm:h-6" />
                 </button>
@@ -220,15 +220,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
                     onClick={() => setSelectedDate(date)}
                     className={`aspect-square rounded-xl sm:rounded-2xl lg:rounded-3xl flex flex-col items-center justify-center gap-0.5 sm:gap-1 transition-all relative border-2 text-sm sm:text-base lg:text-lg ${
                       isSelected
-                        ? 'border-norton-yellow bg-norton-yellow text-norton-dark shadow-lg shadow-norton-yellow/20'
+                        ? 'border-theme-primary bg-theme-primary text-theme-dark shadow-lg shadow-theme-primary/20'
                         : isToday
-                          ? 'border-norton-yellow/30 bg-norton-yellow/10 text-norton-yellow'
-                          : 'border-transparent hover:bg-norton-cardHover text-gray-400'
+                          ? 'border-theme-primary/30 bg-theme-primary/10 text-theme-primary'
+                          : 'border-transparent hover:bg-theme-cardHover text-gray-400'
                     }`}
                   >
                     <span className="font-bold">{day}</span>
                     {hasEvents && (
-                      <div className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${isSelected ? 'bg-norton-dark' : 'bg-norton-yellow'}`} />
+                      <div className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${isSelected ? 'bg-theme-dark' : 'bg-theme-primary'}`} />
                     )}
                   </button>
                 );
@@ -237,10 +237,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
           </div>
 
           {/* Add Event Banner */}
-          <div className="bg-gradient-to-br from-norton-dark to-norton-darker p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[2.5rem] text-white flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-xl gap-4 border border-norton-border">
+          <div className="bg-gradient-to-br from-theme-dark to-theme-darker p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[2.5rem] text-white flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-xl gap-4 border border-theme-border">
             <div className="flex items-center gap-4 sm:gap-6">
-              <div className="bg-norton-yellow/10 p-3 sm:p-4 rounded-2xl sm:rounded-3xl shrink-0 hidden sm:block border border-norton-yellow/20">
-                <Info size={24} className="sm:w-8 sm:h-8 text-norton-yellow" />
+              <div className="bg-theme-primary/10 p-3 sm:p-4 rounded-2xl sm:rounded-3xl shrink-0 hidden sm:block border border-theme-primary/20">
+                <Info size={24} className="sm:w-8 sm:h-8 text-theme-primary" />
               </div>
               <div>
                 <h4 className="text-lg sm:text-xl font-bold">Agenda do Dia</h4>
@@ -253,7 +253,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-norton-yellow text-norton-dark px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-sm transition hover:bg-norton-gold w-full sm:w-auto"
+              className="bg-theme-primary text-theme-dark px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-sm transition hover:bg-theme-secondary w-full sm:w-auto"
             >
               Adicionar Evento
             </button>
@@ -262,7 +262,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
 
         {/* Day Events Sidebar */}
         <div className="space-y-4 sm:space-y-6">
-          <div className="bg-norton-card rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 lg:p-8 shadow-sm border border-norton-border flex flex-col min-h-[400px] lg:min-h-[500px]">
+          <div className="bg-theme-card rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 lg:p-8 shadow-sm border border-theme-border flex flex-col min-h-[400px] lg:min-h-[500px]">
             <div className="flex justify-between items-center mb-4 sm:mb-6">
               <div>
                 <h3 className="text-lg sm:text-xl font-bold text-white">
@@ -272,7 +272,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
               </div>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="p-2 bg-norton-yellow/10 border border-norton-yellow/20 text-norton-yellow rounded-xl hover:bg-norton-yellow/20 transition"
+                className="p-2 bg-theme-primary/10 border border-theme-primary/20 text-theme-primary rounded-xl hover:bg-theme-primary/20 transition"
               >
                 <Plus size={18} className="sm:w-5 sm:h-5" />
               </button>
@@ -281,11 +281,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
             <div className="space-y-3 sm:space-y-4 flex-1 overflow-y-auto max-h-[400px] lg:max-h-[500px] pr-1">
               {dayEvents.map(event => (
                 <div key={event.id} className="group relative animate-in slide-in-from-right-4">
-                  <div className={`p-4 sm:p-5 rounded-xl sm:rounded-[1.5rem] border-l-4 sm:border-l-8 transition-all hover:bg-norton-cardHover ${
+                  <div className={`p-4 sm:p-5 rounded-xl sm:rounded-[1.5rem] border-l-4 sm:border-l-8 transition-all hover:bg-theme-cardHover ${
                     event.category === 'Aniversario' ? 'border-pink-400 bg-pink-500/10' :
-                    event.category === 'Escola' ? 'border-norton-yellow bg-norton-yellow/10' :
-                    event.category === 'Medico' ? 'border-norton-danger bg-norton-danger/10' :
-                    'border-norton-yellow bg-norton-yellow/10'
+                    event.category === 'Escola' ? 'border-theme-primary bg-theme-primary/10' :
+                    event.category === 'Medico' ? 'border-theme-danger bg-theme-danger/10' :
+                    'border-theme-primary bg-theme-primary/10'
                   }`}>
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-1">
@@ -298,7 +298,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
                         {event.source !== 'birthday' && (
                           <button
                             onClick={() => setEvents(prev => prev.filter(e => e.id !== event.id))}
-                            className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-norton-danger transition"
+                            className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-theme-danger transition"
                           >
                             <X size={12} className="sm:w-[14px] sm:h-[14px]" />
                           </button>
@@ -319,7 +319,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
                           {event.attendees.map(id => {
                             const c = children.find(child => child.id === id);
                             return (
-                              <img key={id} src={c?.avatar} className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-norton-card" title={c?.name} alt="" />
+                              <img key={id} src={c?.avatar} className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-theme-card" title={c?.name} alt="" />
                             );
                           })}
                         </div>
@@ -342,11 +342,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
 
       {/* Add Event Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-norton-darker/95 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
-          <div className="bg-norton-card border border-norton-border rounded-t-3xl sm:rounded-[3rem] p-6 sm:p-10 w-full sm:max-w-md shadow-2xl animate-in slide-in-from-bottom sm:zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-theme-darker/95 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
+          <div className="bg-theme-card border border-theme-border rounded-t-3xl sm:rounded-[3rem] p-6 sm:p-10 w-full sm:max-w-md shadow-2xl animate-in slide-in-from-bottom sm:zoom-in duration-200 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6 sm:mb-8">
               <h3 className="text-xl sm:text-2xl font-bold text-white">Novo Compromisso</h3>
-              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-norton-cardHover rounded-xl transition sm:hidden">
+              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-theme-cardHover rounded-xl transition sm:hidden">
                 <X size={20} className="text-gray-400" />
               </button>
             </div>
@@ -357,7 +357,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
                   type="text"
                   value={newEvent.title}
                   onChange={e => setNewEvent({...newEvent, title: e.target.value})}
-                  className="w-full bg-norton-dark border border-norton-border rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 font-bold outline-none focus:border-norton-yellow text-white text-sm sm:text-base"
+                  className="w-full bg-theme-dark border border-theme-border rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 font-bold outline-none focus:border-theme-primary text-white text-sm sm:text-base"
                   placeholder="Ex: Treino de Futebol"
                 />
               </div>
@@ -372,7 +372,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
                       date.setHours(parseInt(h), parseInt(m));
                       setNewEvent({...newEvent, start: date.toISOString()});
                     }}
-                    className="w-full bg-norton-dark border border-norton-border rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 font-bold outline-none text-white text-sm sm:text-base"
+                    className="w-full bg-theme-dark border border-theme-border rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 font-bold outline-none text-white text-sm sm:text-base"
                   />
                 </div>
                 <div>
@@ -385,7 +385,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
                       date.setHours(parseInt(h), parseInt(m));
                       setNewEvent({...newEvent, end: date.toISOString()});
                     }}
-                    className="w-full bg-norton-dark border border-norton-border rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 font-bold outline-none text-white text-sm sm:text-base"
+                    className="w-full bg-theme-dark border border-theme-border rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 font-bold outline-none text-white text-sm sm:text-base"
                   />
                 </div>
               </div>
@@ -394,7 +394,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
                 <select
                   value={newEvent.category}
                   onChange={e => setNewEvent({...newEvent, category: e.target.value as any})}
-                  className="w-full bg-norton-dark border border-norton-border rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 font-bold outline-none text-white text-sm sm:text-base"
+                  className="w-full bg-theme-dark border border-theme-border rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3 sm:py-4 font-bold outline-none text-white text-sm sm:text-base"
                 >
                   <option value="Escola">Escola</option>
                   <option value="Medico">Medico</option>
@@ -411,8 +411,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
                       onClick={() => toggleAttendee(child.id)}
                       className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all text-xs sm:text-sm ${
                         newEvent.attendees.includes(child.id)
-                          ? 'border-norton-yellow bg-norton-yellow/10 text-norton-yellow'
-                          : 'border-norton-border bg-transparent text-gray-500'
+                          ? 'border-theme-primary bg-theme-primary/10 text-theme-primary'
+                          : 'border-theme-border bg-transparent text-gray-500'
                       }`}
                     >
                       <img src={child.avatar} className="w-5 h-5 sm:w-6 sm:h-6 rounded-full" alt="" />
@@ -425,7 +425,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ children }) => {
             <div className="flex flex-col gap-3">
               <button
                 onClick={handleAddEvent}
-                className="w-full py-3 sm:py-4 bg-norton-yellow text-norton-dark font-black rounded-xl sm:rounded-2xl shadow-xl hover:bg-norton-gold transition uppercase tracking-widest text-xs sm:text-sm"
+                className="w-full py-3 sm:py-4 bg-theme-primary text-theme-dark font-black rounded-xl sm:rounded-2xl shadow-xl hover:bg-theme-secondary transition uppercase tracking-widest text-xs sm:text-sm"
               >
                 Salvar Evento
               </button>

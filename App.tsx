@@ -9,8 +9,10 @@ import ChildDetailView from './views/ChildDetailView';
 import StoreView from './views/StoreView';
 import LoginView from './views/LoginView';
 import CalendarView from './views/CalendarView';
-import { Child, Task, ActivityLog, Punishment, Reward, MemberRole, Device, SystemSettings, RewardRequest } from './types';
+import { Child, Task, ActivityLog, Punishment, Reward, MemberRole, Device, SystemSettings, RewardRequest, VisualTheme } from './types';
 import API from './services/apiService';
+import { ThemeProvider } from './ThemeContext';
+import { ThemeId, getThemeClass, DEFAULT_THEME } from './themes';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState('login');
@@ -104,6 +106,17 @@ const App: React.FC = () => {
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
   }, [authenticatedMember?.themePreference]);
+
+  // Apply visual theme class to HTML element
+  useEffect(() => {
+    const html = document.documentElement;
+    const themeId = authenticatedMember?.visualTheme || DEFAULT_THEME;
+
+    // Remove all theme classes
+    html.classList.remove('theme-norton', 'theme-pokemon', 'theme-space', 'theme-onepiece');
+    // Add current theme class
+    html.classList.add(getThemeClass(themeId));
+  }, [authenticatedMember?.visualTheme]);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -368,6 +381,19 @@ const App: React.FC = () => {
     }
   };
 
+  const handleChangeVisualTheme = async (visualTheme: VisualTheme) => {
+    if (!authenticatedMember) return;
+    const updatedMember = { ...authenticatedMember, visualTheme };
+    try {
+      await API.children.update(authenticatedMember.id, updatedMember);
+      setAuthenticatedMember(updatedMember);
+      const updatedChildren = await API.children.getAll();
+      setChildren(updatedChildren);
+    } catch (err: any) {
+      console.error('Erro ao atualizar tema visual:', err.message);
+    }
+  };
+
   const handleDeleteChild = async (id: string) => {
     try {
       await API.children.delete(id);
@@ -530,26 +556,32 @@ const App: React.FC = () => {
     }
   };
 
+  const currentVisualTheme = authenticatedMember?.visualTheme || DEFAULT_THEME;
+
   return (
-    <div className={`flex min-h-screen ${getCurrentTheme() === 'dark' ? 'bg-norton-darker text-gray-100' : 'bg-gray-100 text-gray-900'} transition-colors duration-300`}>
-      {activeView !== 'login' && (
-        <Sidebar
-          activeView={activeView}
-          onViewChange={setActiveView}
-          onLogout={handleLogout}
-          currentUser={authenticatedMember}
-          isReadOnly={isReadOnly}
-          upcomingBirthdays={upcomingBirthdays}
-          isOpen={sidebarOpen}
-          onToggle={() => setSidebarOpen(!sidebarOpen)}
-          currentTheme={getCurrentTheme()}
-          onChangeTheme={handleChangeTheme}
-        />
-      )}
-      <main className={`flex-1 ${activeView !== 'login' ? 'lg:ml-64' : ''} min-h-screen pt-16 lg:pt-0`}>
-        {renderContent()}
-      </main>
-    </div>
+    <ThemeProvider themeId={currentVisualTheme}>
+      <div className={`flex min-h-screen bg-theme-darker text-theme-text transition-colors duration-300`}>
+        {activeView !== 'login' && (
+          <Sidebar
+            activeView={activeView}
+            onViewChange={setActiveView}
+            onLogout={handleLogout}
+            currentUser={authenticatedMember}
+            isReadOnly={isReadOnly}
+            upcomingBirthdays={upcomingBirthdays}
+            isOpen={sidebarOpen}
+            onToggle={() => setSidebarOpen(!sidebarOpen)}
+            currentTheme={getCurrentTheme()}
+            onChangeTheme={handleChangeTheme}
+            currentVisualTheme={currentVisualTheme}
+            onChangeVisualTheme={handleChangeVisualTheme}
+          />
+        )}
+        <main className={`flex-1 ${activeView !== 'login' ? 'lg:ml-64' : ''} min-h-screen pt-16 lg:pt-0`}>
+          {renderContent()}
+        </main>
+      </div>
+    </ThemeProvider>
   );
 };
 
